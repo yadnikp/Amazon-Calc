@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Amazon UK SP Calculator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg:        #0f1117;
+    --surface:   #181c27;
+    --surface2:  #1f2433;
+    --border:    #2a3045;
+    --border2:   #323a52;
+    --text:      #e8eaf0;
+    --muted:     #7c85a0;
+    --accent:    #f0a500;
+    --green:     #22c77a;
+    --green-dim: #0d3d26;
+    --red:       #f05252;
+    --blue:      #4e9af0;
+    --blue-dim:  #0d2040;
+    --radius:    10px;
+    --radius-sm: 6px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header-logo {
+    width: 34px; height: 34px;
+    background: var(--accent);
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .header-text h1 { font-size: 15px; font-weight: 600; }
+  .header-text p  { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .header-badge {
+    margin-left: auto;
+    font-size: 11px; font-weight: 500;
+    padding: 4px 10px; border-radius: 99px;
+    background: var(--green-dim); color: var(--green);
+    border: 1px solid #1a5c3a;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    padding: 0 28px;
+  }
+  .tab {
+    padding: 12px 20px;
+    font-size: 13px; font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* LAYOUT */
+  .main { max-width: 900px; margin: 0 auto; padding: 24px 20px 60px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .section-label {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 12px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px; margin-bottom: 14px;
+  }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 560px) { .grid2, .grid3 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 380px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12px; font-weight: 500; color: var(--muted); }
+  .field input, .field select {
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 14px;
+    padding: 9px 12px; outline: none;
+    transition: border-color 0.15s; width: 100%;
+    -webkit-appearance: none;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .field input::placeholder { color: var(--muted); }
+
+  .pound-wrap { position: relative; }
+  .pound-wrap::before {
+    content: '£'; position: absolute;
+    left: 11px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); font-size: 13px; pointer-events: none;
+  }
+  .pound-wrap input { padding-left: 22px; }
+
+  .fee-hint {
+    font-size: 12px; color: var(--blue);
+    background: var(--blue-dim); border: 1px solid #1a3a6a;
+    border-radius: var(--radius-sm); padding: 8px 12px;
+    margin-top: 12px; line-height: 1.6;
+  }
+  .fee-hint span { font-weight: 600; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  .note { font-size: 12px; color: var(--muted); line-height: 1.7; margin-top: 10px; }
+
+  /* SINGLE RESULTS */
+  #results { display: none; }
+  .metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
+  @media (max-width: 480px) { .metrics { grid-template-columns: 1fr 1fr; } }
+
+  .metric {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 16px;
+  }
+  .metric-label { font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+  .metric-value { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 500; }
+  .metric-value.green { color: var(--green); }
+  .metric-value.amber { color: var(--accent); }
+  .metric.highlight { background: var(--green-dim); border-color: #1a5c3a; }
+  .metric.highlight .metric-label { color: #5ae0a0; }
+
+  .breakdown-title { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .breakdown-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .breakdown-row:last-child { border-bottom: none; }
+  .breakdown-row .val { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text); font-weight: 500; }
+  .breakdown-row.sp-row { color: var(--text); font-weight: 500; }
+  .breakdown-row.sp-row .val { color: var(--green); font-size: 15px; }
+  .breakdown-row.total-row { border-top: 1px solid var(--border2); margin-top: 4px; padding-top: 10px; color: var(--text); font-weight: 600; border-bottom: none; }
+  .breakdown-row.total-row .val { color: var(--green); font-size: 15px; }
+
+  #empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+  #empty .empty-icon { font-size: 36px; margin-bottom: 12px; }
+
+  /* BULK MODE */
+  .bulk-options { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .opt-btn {
+    padding: 8px 16px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    border: 1px solid var(--border2); background: var(--surface2);
+    color: var(--muted); transition: all 0.15s;
+  }
+  .opt-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .opt-btn.active { background: var(--accent); border-color: var(--accent); color: #000; }
+
+  .bulk-textarea {
+    width: 100%;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); color: var(--text);
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    padding: 12px; outline: none; resize: vertical;
+    min-height: 140px; line-height: 1.6;
+    transition: border-color 0.15s;
+  }
+  .bulk-textarea:focus { border-color: var(--accent); }
+  .bulk-textarea::placeholder { color: var(--muted); }
+
+  .bulk-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+
+  .btn {
+    padding: 9px 20px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    border: none; transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-outline { background: transparent; border: 1px solid var(--border2); color: var(--muted); }
+  .btn-outline:hover { border-color: var(--green); color: var(--green); }
+  .btn-green { background: var(--green); color: #000; }
+
+  .bulk-hint { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+  /* BULK RESULTS TABLE */
+  #bulk-results { display: none; margin-top: 14px; }
+  .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: var(--surface2); }
+  thead th {
+    padding: 10px 14px; text-align: left;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td { padding: 10px 14px; color: var(--muted); white-space: nowrap; }
+  tbody td.mono { font-family: 'JetBrains Mono', monospace; color: var(--text); }
+  tbody td.green { font-family: 'JetBrains Mono', monospace; color: var(--green); font-weight: 500; }
+  tbody td.amber { font-family: 'JetBrains Mono', monospace; color: var(--accent); font-weight: 500; }
+  tbody td.err   { color: var(--red); font-size: 12px; }
+  tbody td.label { color: var(--text); }
+
+  .bulk-summary {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .bulk-stat {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 16px;
+    font-size: 12px; color: var(--muted);
+  }
+  .bulk-stat strong { font-family: 'JetBrains Mono', monospace; color: var(--text); display: block; font-size: 18px; margin-bottom: 2px; }
+
+  .upload-zone {
+    border: 2px dashed var(--border2); border-radius: var(--radius);
+    padding: 28px; text-align: center; cursor: pointer;
+    transition: border-color 0.15s; margin-bottom: 12px;
+  }
+  .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); }
+  .upload-zone p { color: var(--muted); font-size: 13px; }
+  .upload-zone .uz-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-zone input { display: none; }
+  .upload-zone .uz-sub { font-size: 11px; margin-top: 6px; }
+
+  .footer {
+    text-align: center; font-size: 11px; color: var(--muted);
+    padding: 24px; border-top: 1px solid var(--border); margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">📦</div>
+  <div class="header-text">
+    <h1>Amazon UK SP Calculator</h1>
+    <p>FBA · VAT-inclusive · Tiered referral fees</p>
+  </div>
+  <div class="header-badge">UK Marketplace</div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('single')">Single lookup</div>
+  <div class="tab" onclick="switchTab('bulk')">Bulk calculator</div>
+</div>
+
+<main class="main">
+
+  <!-- ========== SINGLE PANEL ========== -->
+  <div class="panel active" id="panel-single">
+
+    <div class="card">
+      <p class="section-label">Product</p>
+      <div class="grid2" style="margin-bottom:12px;">
+        <div class="field">
+          <label>Category</label>
+          <select id="category" onchange="onCategoryChange()">
+            <optgroup label="Most used">
+              <option value="beauty">Beauty, Health &amp; Personal Care</option>
+              <option value="home">Home Products</option>
+              <option value="baby">Baby Products</option>
+              <option value="grocery">Grocery &amp; Gourmet Foods</option>
+            </optgroup>
+            <optgroup label="Other categories">
+              <option value="clothing">Clothing &amp; Accessories</option>
+              <option value="pet_clothing">Pet Clothing</option>
+              <option value="jewellery">Jewellery</option>
+              <option value="watches">Watches</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="field">
+          <label>Target margin (%)</label>
+          <input type="number" id="target" value="5.15" min="0" max="80" step="0.05" oninput="calc()" />
+        </div>
+      </div>
+      <div class="fee-hint" id="fee-hint"></div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">Costs</p>
+      <div class="grid3">
+        <div class="field">
+          <label>Cost of goods, ex-VAT</label>
+          <div class="pound-wrap">
+            <input type="number" id="cost" placeholder="7.29" min="0" step="0.01" oninput="calc()" />
+          </div>
+        </div>
+        <div class="field">
+          <label>FBA fulfilment fee</label>
+          <div class="pound-wrap">
+            <input type="number" id="fulfilment" placeholder="2.76" min="0" step="0.01" oninput="calc()" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Storage cost</label>
+          <div class="pound-wrap">
+            <input type="number" id="storage" value="0.00" min="0" step="0.01" oninput="calc()" />
+          </div>
+        </div>
+      </div>
+      <p class="note">DST: 2% on referral + 2% on fulfilment &nbsp;·&nbsp; VAT: SP × 20/120 &nbsp;·&nbsp; SP snapped to nearest allowed price ending</p>
+    </div>
+
+    <div id="results">
+      <div class="card">
+        <p class="section-label">Results</p>
+        <div class="metrics">
+          <div class="metric highlight">
+            <p class="metric-label">Recommended SP</p>
+            <p class="metric-value green" id="r-sp">—</p>
+          </div>
+          <div class="metric">
+            <p class="metric-label">Actual margin</p>
+            <p class="metric-value" id="r-margin">—</p>
+          </div>
+          <div class="metric">
+            <p class="metric-label">Net profit</p>
+            <p class="metric-value green" id="r-profit">—</p>
+          </div>
+        </div>
+        <hr class="divider" />
+        <p class="breakdown-title">Full breakdown</p>
+        <div id="breakdown-rows"></div>
+      </div>
+    </div>
+
+    <div id="empty">
+      <div class="empty-icon">🧮</div>
+      <p>Enter your cost and FBA fulfilment fee to calculate the selling price.</p>
+    </div>
+
+  </div><!-- /panel-single -->
+
+  <!-- ========== BULK PANEL ========== -->
+  <div class="panel" id="panel-bulk">
+
+    <div class="card">
+      <p class="section-label">Bulk settings</p>
+      <div class="grid2">
+        <div class="field">
+          <label>Category (applied to all rows)</label>
+          <select id="bulk-category" onchange="bulkCategoryHint()">
+            <optgroup label="Most used">
+              <option value="beauty">Beauty, Health &amp; Personal Care</option>
+              <option value="home">Home Products</option>
+              <option value="baby">Baby Products</option>
+              <option value="grocery">Grocery &amp; Gourmet Foods</option>
+            </optgroup>
+            <optgroup label="Other categories">
+              <option value="clothing">Clothing &amp; Accessories</option>
+              <option value="pet_clothing">Pet Clothing</option>
+              <option value="jewellery">Jewellery</option>
+              <option value="watches">Watches</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="field">
+          <label>Target margin (%) — applied to all rows</label>
+          <input type="number" id="bulk-target" value="5.15" min="0" max="80" step="0.05" />
+        </div>
+      </div>
+      <div class="fee-hint" id="bulk-fee-hint" style="margin-top:12px;"></div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">Input method</p>
+
+      <div class="bulk-options">
+        <div class="opt-btn active" onclick="setInputMode('paste')" id="mode-paste">Paste data</div>
+        <div class="opt-btn" onclick="setInputMode('upload')" id="mode-upload">Upload CSV / Excel</div>
+        <div class="opt-btn" onclick="setInputMode('manual')" id="mode-manual">Type rows manually</div>
+      </div>
+
+      <!-- PASTE MODE -->
+      <div id="input-paste">
+        <p class="note" style="margin-bottom:8px;">
+          Paste two columns: <strong style="color:var(--text);">Cost</strong> and <strong style="color:var(--text);">FBA fee</strong> — copied from Excel, Google Sheets, or any tab/comma separated data. Header row optional. You can also include an optional third column for a <strong style="color:var(--text);">label/ASIN/SKU</strong>.
+        </p>
+        <textarea class="bulk-textarea" id="paste-area" placeholder="7.29&#9;2.76&#10;5.50&#9;2.43&#10;12.00&#9;3.10&#10;&#10;Or with labels:&#10;B0918FHY6P&#9;7.29&#9;2.76&#10;SKU-002&#9;5.50&#9;2.43"></textarea>
+        <div class="bulk-actions">
+          <button class="btn btn-primary" onclick="runBulk()">Calculate all</button>
+          <button class="btn btn-outline" onclick="clearBulk()">Clear</button>
+          <span class="bulk-hint" id="paste-count"></span>
+        </div>
+      </div>
+
+      <!-- UPLOAD MODE -->
+      <div id="input-upload" style="display:none;">
+        <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+          <div class="uz-icon">📂</div>
+          <p>Click to upload or drag &amp; drop a CSV file</p>
+          <p class="uz-sub" style="color:var(--muted);">CSV with columns: Cost, FBA Fee (header row optional). Label/ASIN column optional.</p>
+          <input type="file" id="file-input" accept=".csv,.txt" onchange="handleFile(event)" />
+        </div>
+        <div class="bulk-actions">
+          <button class="btn btn-primary" onclick="runBulk()">Calculate all</button>
+          <button class="btn btn-outline" onclick="clearBulk()">Clear</button>
+          <span class="bulk-hint" id="upload-count"></span>
+        </div>
+      </div>
+
+      <!-- MANUAL MODE -->
+      <div id="input-manual" style="display:none;">
+        <p class="note" style="margin-bottom:10px;">Add rows one by one. Storage cost per row is optional.</p>
+        <div id="manual-rows"></div>
+        <button class="btn btn-outline" onclick="addManualRow()" style="margin-top:10px;">+ Add row</button>
+        <div class="bulk-actions" style="margin-top:10px;">
+          <button class="btn btn-primary" onclick="runBulk()">Calculate all</button>
+          <button class="btn btn-outline" onclick="clearBulk()">Clear rows</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BULK RESULTS -->
+    <div id="bulk-results">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+          <p class="section-label" style="margin:0;">Results</p>
+          <button class="btn btn-green" onclick="downloadCSV()">⬇ Download CSV</button>
+        </div>
+        <div class="bulk-summary" id="bulk-summary"></div>
+        <div class="table-wrap">
+          <table id="bulk-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Label / SKU</th>
+                <th>Cost</th>
+                <th>FBA Fee</th>
+                <th>Recommended SP</th>
+                <th>Margin %</th>
+                <th>Net Profit</th>
+                <th>Referral Rate</th>
+              </tr>
+            </thead>
+            <tbody id="bulk-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /panel-bulk -->
+
+</main>
+
+<footer class="footer">
+  Amazon UK FBA · VAT-inclusive pricing · Tiered referral fees by category
+</footer>
+
+<script>
+/* ========== SHARED DATA ========== */
+const CATEGORIES = {
+  beauty:      { label:"Beauty, Health & Personal Care", hint:"8% if SP ≤ £10 → 15% if SP > £10", minFee:0.25, tiers:[{upTo:10,rate:0.08},{upTo:Infinity,rate:0.15}] },
+  home:        { label:"Home Products",                  hint:"8% if SP ≤ £20 → 15% if SP > £20", minFee:0.25, tiers:[{upTo:20,rate:0.08},{upTo:Infinity,rate:0.15}] },
+  baby:        { label:"Baby Products",                  hint:"8% if SP ≤ £10 → 15% if SP > £10", minFee:0.25, tiers:[{upTo:10,rate:0.08},{upTo:Infinity,rate:0.15}] },
+  grocery:     { label:"Grocery & Gourmet Foods",        hint:"5% if SP ≤ £10 → 8% if SP > £10",  minFee:0,    tiers:[{upTo:10,rate:0.05},{upTo:Infinity,rate:0.08}] },
+  clothing:    { label:"Clothing & Accessories",         hint:"5% (≤£15) → 10% (£15–£20) → 15% (>£20)", minFee:0.25, tiers:[{upTo:15,rate:0.05},{upTo:20,rate:0.10},{upTo:Infinity,rate:0.15}] },
+  pet_clothing:{ label:"Pet Clothing",                   hint:"5% if SP ≤ £10 → 15% if SP > £10", minFee:0.25, tiers:[{upTo:10,rate:0.05},{upTo:Infinity,rate:0.15}] },
+  jewellery:   { label:"Jewellery",                      hint:"20% if SP ≤ £250 → 5% if SP > £250", minFee:0.25, tiers:[{upTo:250,rate:0.20},{upTo:Infinity,rate:0.05}] },
+  watches:     { label:"Watches",                        hint:"15% (≤£50) → 8% (£50–£100) → 4% (£100–£500) → 2% (>£500)", minFee:0.25, tiers:[{upTo:50,rate:0.15},{upTo:100,rate:0.08},{upTo:500,rate:0.04},{upTo:Infinity,rate:0.02}] },
+};
+
+const PRICE_ENDINGS = [0.05,0.09,0.15,0.19,0.25,0.29,0.35,0.39,0.45,0.49,0.55,0.59,0.65,0.69,0.75,0.79,0.85,0.89,0.95,0.99];
+
+function amazonFee(sp, catKey) {
+  const cat = CATEGORIES[catKey];
+  const tier = cat.tiers.find(t => sp <= t.upTo);
+  return Math.max(Math.round(sp * tier.rate * 100) / 100, cat.minFee);
+}
+function referralRateLabel(sp, catKey) {
+  const tier = CATEGORIES[catKey].tiers.find(t => sp <= t.upTo);
+  return (tier.rate * 100).toFixed(0) + '%';
+}
+function digitalFee(referral, fulfilment) {
+  return (Math.round(referral * 0.02 * 100) / 100) + (Math.round(fulfilment * 0.02 * 100) / 100);
+}
+function calculateMargin(sp, cost, fulfilment, storage, catKey) {
+  const vat      = sp * 20 / 120;
+  const referral = amazonFee(sp, catKey);
+  const digital  = digitalFee(referral, fulfilment);
+  const profit   = Math.round((sp - (cost + vat + referral + digital + fulfilment + storage)) * 100) / 100;
+  return { margin: profit / sp, profit, vat, referral, digital };
+}
+function nextAllowedPrice(price) {
+  const integer = Math.floor(Math.round(price * 100) / 100);
+  const decimal = Math.round((price - integer) * 100) / 100;
+  for (const e of PRICE_ENDINGS) { if (decimal <= e) return Math.round((integer + e) * 100) / 100; }
+  return Math.round((integer + 1 + PRICE_ENDINGS[0]) * 100) / 100;
+}
+function findSP(cost, fulfilment, targetMargin, storage, catKey) {
+  let sp = 2.00;
+  while (sp <= 500) {
+    const candidate = nextAllowedPrice(sp);
+    const result = calculateMargin(candidate, cost, fulfilment, storage, catKey);
+    if (result.margin >= targetMargin) return { sp: candidate, ...result };
+    sp = Math.round((candidate + 0.01) * 100) / 100;
+  }
+  return null;
+}
+
+function f(n)   { return '£' + Math.abs(n).toFixed(2); }
+function neg(n) { return '−£' + Math.abs(n).toFixed(2); }
+
+/* ========== TAB SWITCHING ========== */
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (tab==='single'?0:1)===i));
+  document.getElementById('panel-single').classList.toggle('active', tab==='single');
+  document.getElementById('panel-bulk').classList.toggle('active', tab==='bulk');
+}
+
+/* ========== SINGLE CALC ========== */
+function onCategoryChange() {
+  const catKey = document.getElementById('category').value;
+  document.getElementById('fee-hint').innerHTML = '<span>Referral fee:</span> ' + CATEGORIES[catKey].hint + ' &nbsp;(min £' + CATEGORIES[catKey].minFee.toFixed(2) + ')';
+  calc();
+}
+
+function calc() {
+  const cost       = parseFloat(document.getElementById('cost').value);
+  const fulfilment = parseFloat(document.getElementById('fulfilment').value);
+  const targetPct  = parseFloat(document.getElementById('target').value) || 5.15;
+  const storage    = parseFloat(document.getElementById('storage').value) || 0;
+  const catKey     = document.getElementById('category').value;
+  const targetMargin = targetPct / 100;
+
+  const resEl   = document.getElementById('results');
+  const emptyEl = document.getElementById('empty');
+
+  if (isNaN(cost) || cost <= 0 || isNaN(fulfilment) || fulfilment <= 0) {
+    resEl.style.display = 'none'; emptyEl.style.display = 'block'; return;
+  }
+
+  const result = findSP(cost, fulfilment, targetMargin, storage, catKey);
+  if (!result) {
+    emptyEl.innerHTML = '<div class="empty-icon">⚠️</div><p>No valid SP found under £500.</p>';
+    resEl.style.display = 'none'; emptyEl.style.display = 'block'; return;
+  }
+
+  const { sp, margin, profit, vat, referral, digital } = result;
+  const actualPct = (margin * 100).toFixed(2);
+
+  resEl.style.display = 'block'; emptyEl.style.display = 'none';
+  document.getElementById('r-sp').textContent = f(sp);
+  const mEl = document.getElementById('r-margin');
+  mEl.textContent = actualPct + '%';
+  mEl.className = 'metric-value ' + (margin >= targetMargin ? 'green' : 'amber');
+  document.getElementById('r-profit').textContent = f(profit);
+
+  const rateLabel = referralRateLabel(sp, catKey);
+  const rows = [
+    { label:'Selling price (VAT-inclusive)', val:f(sp), cls:'sp-row' },
+    { label:'VAT (20/120 of SP)', val:neg(vat) },
+    { label:'Referral fee (' + rateLabel + ')', val:neg(referral) },
+    { label:'Digital services fee (2% + 2%)', val:neg(digital) },
+    { label:'FBA fulfilment fee', val:neg(fulfilment) },
+    ...(storage > 0 ? [{ label:'Storage cost', val:neg(storage) }] : []),
+    { label:'Cost of goods', val:neg(cost) },
+    { label:'Net profit &nbsp;·&nbsp; ' + actualPct + '% margin', val:f(profit), cls:'total-row' },
+  ];
+  document.getElementById('breakdown-rows').innerHTML = rows
+    .map(r => `<div class="breakdown-row ${r.cls||''}"><span>${r.label}</span><span class="val">${r.val}</span></div>`)
+    .join('');
+}
+
+/* ========== BULK MODE ========== */
+let inputMode = 'paste';
+let parsedRows = []; // { label, cost, fba, storage }
+let bulkResults = [];
+
+function setInputMode(mode) {
+  inputMode = mode;
+  ['paste','upload','manual'].forEach(m => {
+    document.getElementById('mode-' + m).classList.toggle('active', m === mode);
+    document.getElementById('input-' + m).style.display = m === mode ? 'block' : 'none';
+  });
+  if (mode === 'manual' && document.querySelectorAll('.manual-row').length === 0) {
+    addManualRow(); addManualRow(); addManualRow();
+  }
+}
+
+function bulkCategoryHint() {
+  const catKey = document.getElementById('bulk-category').value;
+  document.getElementById('bulk-fee-hint').innerHTML = '<span>Referral fee:</span> ' + CATEGORIES[catKey].hint + ' &nbsp;(min £' + CATEGORIES[catKey].minFee.toFixed(2) + ')';
+}
+
+// Parse pasted text
+function parsePasteText(text) {
+  const lines = text.trim().split('\n').filter(l => l.trim());
+  const rows = [];
+  for (const line of lines) {
+    const parts = line.trim().split(/[\t,;]+/);
+    if (parts.length < 2) continue;
+    // detect if first col is label (non-numeric)
+    let label = '', costStr, fbaStr, storageStr = '0';
+    const first = parts[0].trim();
+    if (isNaN(parseFloat(first)) || /[a-zA-Z]/.test(first)) {
+      label = first; costStr = parts[1]; fbaStr = parts[2] || '';
+      storageStr = parts[3] || '0';
+    } else {
+      costStr = parts[0]; fbaStr = parts[1];
+      storageStr = parts[2] || '0';
+    }
+    const cost = parseFloat(costStr);
+    const fba  = parseFloat(fbaStr);
+    const storage = parseFloat(storageStr) || 0;
+    if (isNaN(cost) || isNaN(fba)) continue;
+    // skip header row
+    if (costStr.toLowerCase().includes('cost') || fbaStr.toLowerCase().includes('fee')) continue;
+    rows.push({ label, cost, fba, storage });
+  }
+  return rows;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  onCategoryChange();
+  bulkCategoryHint();
+  document.getElementById('paste-area').addEventListener('input', () => {
+    const rows = parsePasteText(document.getElementById('paste-area').value);
+    document.getElementById('paste-count').textContent = rows.length > 0 ? rows.length + ' rows detected' : '';
+  });
+});
+
+// Manual rows
+let manualRowId = 0;
+function addManualRow() {
+  manualRowId++;
+  const div = document.createElement('div');
+  div.className = 'manual-row';
+  div.id = 'mrow-' + manualRowId;
+  div.style.cssText = 'display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:end;';
+  div.innerHTML = `
+    <div class="field"><label>Label / ASIN / SKU (optional)</label><input type="text" placeholder="e.g. B0918FHY6P" /></div>
+    <div class="field"><label>Cost ex-VAT (£)</label><input type="number" step="0.01" min="0" placeholder="7.29" /></div>
+    <div class="field"><label>FBA fee (£)</label><input type="number" step="0.01" min="0" placeholder="2.76" /></div>
+    <div class="field"><label>Storage (£)</label><input type="number" step="0.01" min="0" value="0.00" /></div>
+    <button onclick="removeManualRow('mrow-${manualRowId}')" style="background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:var(--radius-sm);padding:8px 10px;cursor:pointer;font-size:14px;margin-bottom:0;">✕</button>
+  `;
+  document.getElementById('manual-rows').appendChild(div);
+}
+function removeManualRow(id) { const el = document.getElementById(id); if (el) el.remove(); }
+
+function getManualRows() {
+  const rows = [];
+  document.querySelectorAll('.manual-row').forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    const label   = inputs[0].value.trim();
+    const cost    = parseFloat(inputs[1].value);
+    const fba     = parseFloat(inputs[2].value);
+    const storage = parseFloat(inputs[3].value) || 0;
+    if (!isNaN(cost) && cost > 0 && !isNaN(fba) && fba > 0) {
+      rows.push({ label, cost, fba, storage });
+    }
+  });
+  return rows;
+}
+
+// File upload
+function handleFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('paste-area').value = e.target.result;
+    const rows = parsePasteText(e.target.result);
+    document.getElementById('upload-count').textContent = rows.length + ' rows loaded from ' + file.name;
+    setInputMode('paste');
+  };
+  reader.readAsText(file);
+}
+function dragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag-over'); }
+function dragLeave()  { document.getElementById('drop-zone').classList.remove('drag-over'); }
+function dropFile(e) {
+  e.preventDefault(); dragLeave();
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const rows = parsePasteText(ev.target.result);
+    document.getElementById('upload-count').textContent = rows.length + ' rows loaded from ' + file.name;
+    document.getElementById('paste-area').value = ev.target.result;
+    setInputMode('paste');
+  };
+  reader.readAsText(file);
+}
+
+/* ---- Run bulk calculation ---- */
+function runBulk() {
+  const catKey      = document.getElementById('bulk-category').value;
+  const targetPct   = parseFloat(document.getElementById('bulk-target').value) || 5.15;
+  const targetMargin = targetPct / 100;
+
+  let rows = [];
+  if (inputMode === 'paste' || inputMode === 'upload') {
+    rows = parsePasteText(document.getElementById('paste-area').value);
+  } else {
+    rows = getManualRows();
+  }
+
+  if (rows.length === 0) {
+    alert('No valid rows found. Make sure each row has at least two numbers: cost and FBA fee.');
+    return;
+  }
+
+  bulkResults = rows.map((row, i) => {
+    const result = findSP(row.cost, row.fba, targetMargin, row.storage, catKey);
+    if (!result) return { ...row, index: i+1, error: 'No SP found under £500' };
+    return {
+      ...row,
+      index: i + 1,
+      sp: result.sp,
+      margin: (result.margin * 100).toFixed(2),
+      profit: result.profit,
+      rateLabel: referralRateLabel(result.sp, catKey),
+    };
+  });
+
+  renderBulkResults(targetPct, catKey);
+}
+
+function renderBulkResults(targetPct, catKey) {
+  const el = document.getElementById('bulk-results');
+  el.style.display = 'block';
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  const valid = bulkResults.filter(r => !r.error);
+  const avgSP     = valid.length ? (valid.reduce((s,r) => s + r.sp, 0) / valid.length) : 0;
+  const avgMargin = valid.length ? (valid.reduce((s,r) => s + parseFloat(r.margin), 0) / valid.length) : 0;
+  const avgProfit = valid.length ? (valid.reduce((s,r) => s + r.profit, 0) / valid.length) : 0;
+
+  document.getElementById('bulk-summary').innerHTML = `
+    <div class="bulk-stat"><strong>${bulkResults.length}</strong>Total rows</div>
+    <div class="bulk-stat"><strong>${valid.length}</strong>Calculated</div>
+    <div class="bulk-stat"><strong>£${avgSP.toFixed(2)}</strong>Avg SP</div>
+    <div class="bulk-stat"><strong>${avgMargin.toFixed(2)}%</strong>Avg margin</div>
+    <div class="bulk-stat"><strong>£${avgProfit.toFixed(2)}</strong>Avg profit</div>
+  `;
+
+  const tbody = document.getElementById('bulk-tbody');
+  tbody.innerHTML = bulkResults.map(r => {
+    if (r.error) return `
+      <tr>
+        <td class="mono">${r.index}</td>
+        <td class="label">${r.label || '—'}</td>
+        <td class="mono">${f(r.cost)}</td>
+        <td class="mono">${f(r.fba)}</td>
+        <td class="err" colspan="4">${r.error}</td>
+      </tr>`;
+    const mCls = parseFloat(r.margin) >= targetPct - 0.05 ? 'green' : 'amber';
+    return `
+      <tr>
+        <td class="mono">${r.index}</td>
+        <td class="label">${r.label || '—'}</td>
+        <td class="mono">${f(r.cost)}</td>
+        <td class="mono">${f(r.fba)}</td>
+        <td class="green">£${r.sp.toFixed(2)}</td>
+        <td class="${mCls}">${r.margin}%</td>
+        <td class="mono">£${r.profit.toFixed(2)}</td>
+        <td class="mono">${r.rateLabel}</td>
+      </tr>`;
+  }).join('');
+}
+
+function clearBulk() {
+  document.getElementById('paste-area').value = '';
+  document.getElementById('paste-count').textContent = '';
+  document.getElementById('bulk-results').style.display = 'none';
+  document.querySelectorAll('.manual-row').forEach(r => r.remove());
+  manualRowId = 0;
+  if (inputMode === 'manual') { addManualRow(); addManualRow(); addManualRow(); }
+}
+
+/* ---- CSV download ---- */
+function downloadCSV() {
+  if (!bulkResults.length) return;
+  const catKey    = document.getElementById('bulk-category').value;
+  const targetPct = document.getElementById('bulk-target').value;
+  const catLabel  = CATEGORIES[catKey].label;
+
+  const header = ['#','Label/SKU','Cost (£)','FBA Fee (£)','Storage (£)','Recommended SP (£)','Margin %','Net Profit (£)','Referral Rate'];
+  const rows = bulkResults.map(r => [
+    r.index,
+    r.label || '',
+    r.cost.toFixed(2),
+    r.fba.toFixed(2),
+    (r.storage || 0).toFixed(2),
+    r.error ? 'ERROR' : r.sp.toFixed(2),
+    r.error ? r.error : r.margin,
+    r.error ? '' : r.profit.toFixed(2),
+    r.error ? '' : r.rateLabel,
+  ]);
+
+  const meta = [
+    ['Category', catLabel],
+    ['Target margin', targetPct + '%'],
+    ['Generated', new Date().toLocaleString()],
+    [],
+  ];
+
+  const csv = [...meta, header, ...rows]
+    .map(row => row.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(','))
+    .join('\n');
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'amazon-sp-results-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Init
+window.addEventListener('DOMContentLoaded', () => {
+  onCategoryChange();
+  bulkCategoryHint();
+  document.getElementById('paste-area').addEventListener('input', () => {
+    const rows = parsePasteText(document.getElementById('paste-area').value);
+    document.getElementById('paste-count').textContent = rows.length > 0 ? rows.length + ' rows detected' : '';
+  });
+});
+</script>
+</body>
+</html>
