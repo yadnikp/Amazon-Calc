@@ -1,849 +1,1161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Amazon UK SP Calculator</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SPcalc — Amazon UK FBA Pricing</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-  :root {
-    --bg:        #0f1117;
-    --surface:   #181c27;
-    --surface2:  #1f2433;
-    --border:    #2a3045;
-    --border2:   #323a52;
-    --text:      #e8eaf0;
-    --muted:     #7c85a0;
-    --accent:    #f0a500;
-    --green:     #22c77a;
-    --green-dim: #0d3d26;
-    --red:       #f05252;
-    --blue:      #4e9af0;
-    --blue-dim:  #0d2040;
-    --radius:    10px;
-    --radius-sm: 6px;
-  }
+:root {
+  /* ── COLORFUL PALETTE ── */
+  --bg:       #0d0d1a;
+  --s1:       #13131f;
+  --s2:       #18182a;
+  --s3:       #1e1e33;
+  --s4:       #25253d;
+  --border:   #2a2a45;
+  --border2:  #34346a;
+  --text:     #f0f0ff;
+  --sub:      #9898c0;
+  --muted:    #55557a;
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  /* Purple-to-pink primary */
+  --accent:   #a855f7;
+  --accent2:  #d946ef;
+  --accentbg: rgba(168,85,247,0.12);
+  --accentbd: rgba(168,85,247,0.35);
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    min-height: 100vh;
-  }
+  /* Cyan-teal for success/profit */
+  --green:    #06b6d4;
+  --green2:   #22d3ee;
+  --greenbg:  rgba(6,182,212,0.1);
+  --greenbd:  rgba(6,182,212,0.3);
 
-  /* HEADER */
-  .header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 28px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .header-logo {
-    width: 34px; height: 34px;
-    background: var(--accent);
-    border-radius: var(--radius-sm);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; flex-shrink: 0;
-  }
-  .header-text h1 { font-size: 15px; font-weight: 600; }
-  .header-text p  { font-size: 12px; color: var(--muted); margin-top: 1px; }
-  .header-badge {
-    margin-left: auto;
-    font-size: 11px; font-weight: 500;
-    padding: 4px 10px; border-radius: 99px;
-    background: var(--green-dim); color: var(--green);
-    border: 1px solid #1a5c3a;
-  }
+  /* Hot orange for warnings */
+  --amber:    #f97316;
+  --amberbg:  rgba(249,115,22,0.1);
+  --amberbd:  rgba(249,115,22,0.3);
 
-  /* TABS */
-  .tabs {
-    display: flex;
-    gap: 0;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    padding: 0 28px;
-  }
-  .tab {
-    padding: 12px 20px;
-    font-size: 13px; font-weight: 500;
-    color: var(--muted);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all 0.15s;
-    user-select: none;
-  }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  /* Rose for costs/negative */
+  --red:      #f43f5e;
+  --redbg:    rgba(244,63,94,0.1);
+  --redbd:    rgba(244,63,94,0.25);
 
-  /* LAYOUT */
-  .main { max-width: 900px; margin: 0 auto; padding: 24px 20px 60px; }
-  .panel { display: none; }
-  .panel.active { display: block; }
+  /* Blue info */
+  --blue:     #60a5fa;
+  --bluebg:   rgba(96,165,250,0.08);
+  --bluebd:   rgba(96,165,250,0.25);
 
-  .section-label {
-    font-size: 10px; font-weight: 600;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 12px;
-  }
+  /* Gold for fees */
+  --gold:     #eab308;
 
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px; margin-bottom: 14px;
-  }
+  --r:  7px;
+  --r2: 12px;
+  --r3: 16px;
+  --r4: 22px;
+}
 
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-  @media (max-width: 560px) { .grid2, .grid3 { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 380px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background: #06080f;
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
 
-  .field { display: flex; flex-direction: column; gap: 6px; }
-  .field label { font-size: 12px; font-weight: 500; color: var(--muted); }
-  .field input, .field select {
-    background: var(--surface2); border: 1px solid var(--border2);
-    border-radius: var(--radius-sm); color: var(--text);
-    font-family: 'Inter', sans-serif; font-size: 14px;
-    padding: 9px 12px; outline: none;
-    transition: border-color 0.15s; width: 100%;
-    -webkit-appearance: none;
-  }
-  .field input:focus, .field select:focus { border-color: var(--accent); }
-  .field input::placeholder { color: var(--muted); }
+/* ── AERO BACKGROUND SYSTEM ── */
+.bg-grad{
+  position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
+  background:linear-gradient(160deg,#0a0e1f 0%,#0d1128 18%,#091422 38%,#060b1a 55%,#080d1e 70%,#050910 100%);
+}
+/* Aurora blob 1 — violet-indigo, top-left */
+.bg-grad::before{
+  content:'';position:absolute;
+  width:1100px;height:900px;top:-320px;left:-280px;
+  background:radial-gradient(ellipse at 40% 40%,rgba(120,80,220,0.28) 0%,rgba(80,50,180,0.14) 35%,rgba(40,20,120,0.05) 60%,transparent 75%);
+  animation:aero1 22s ease-in-out infinite alternate;
+  filter:blur(40px);
+}
+/* Aurora blob 2 — cyan-teal, bottom-right */
+.bg-grad::after{
+  content:'';position:absolute;
+  width:900px;height:800px;bottom:-250px;right:-200px;
+  background:radial-gradient(ellipse at 55% 55%,rgba(30,160,220,0.22) 0%,rgba(20,120,190,0.12) 40%,rgba(10,60,130,0.04) 65%,transparent 80%);
+  animation:aero2 18s ease-in-out infinite alternate;
+  filter:blur(50px);
+}
+/* Aurora blob 3 — magenta, center */
+.bg-mid{
+  position:absolute;
+  width:700px;height:700px;top:35%;left:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(ellipse at 50% 50%,rgba(180,60,200,0.10) 0%,rgba(120,40,160,0.05) 45%,transparent 70%);
+  animation:aero3 26s ease-in-out infinite alternate;
+  filter:blur(60px);
+}
+/* Aero scattered star-shimmer dots */
+.bg-stars{
+  position:absolute;inset:0;
+  background-image:
+    radial-gradient(1px 1px at 12% 18%,rgba(200,210,255,0.35) 0%,transparent 100%),
+    radial-gradient(1px 1px at 28% 72%,rgba(180,200,255,0.25) 0%,transparent 100%),
+    radial-gradient(1.5px 1.5px at 44% 31%,rgba(220,230,255,0.4) 0%,transparent 100%),
+    radial-gradient(1px 1px at 67% 14%,rgba(200,215,255,0.3) 0%,transparent 100%),
+    radial-gradient(1px 1px at 83% 58%,rgba(190,205,255,0.25) 0%,transparent 100%),
+    radial-gradient(1.5px 1.5px at 91% 82%,rgba(210,225,255,0.35) 0%,transparent 100%),
+    radial-gradient(1px 1px at 56% 89%,rgba(200,210,255,0.2) 0%,transparent 100%),
+    radial-gradient(1px 1px at 7% 44%,rgba(215,225,255,0.28) 0%,transparent 100%),
+    radial-gradient(2px 2px at 73% 36%,rgba(230,240,255,0.18) 0%,transparent 100%),
+    radial-gradient(1px 1px at 38% 55%,rgba(200,215,255,0.22) 0%,transparent 100%);
+  animation:shimmer 8s ease-in-out infinite alternate;
+}
+/* Aero glossy window sheen — top highlight */
+.bg-sheen{
+  position:absolute;top:0;left:0;right:0;height:45%;
+  background:linear-gradient(180deg,rgba(100,130,220,0.04) 0%,rgba(80,110,200,0.025) 40%,transparent 100%);
+  pointer-events:none;
+}
+@keyframes aero1{from{transform:translate(0,0) rotate(0deg) scale(1)}to{transform:translate(120px,90px) rotate(8deg) scale(1.12)}}
+@keyframes aero2{from{transform:translate(0,0) rotate(0deg) scale(1)}to{transform:translate(-90px,-70px) rotate(-6deg) scale(1.1)}}
+@keyframes aero3{from{transform:translate(-50%,-50%) scale(1) rotate(0deg)}to{transform:translate(-50%,-50%) scale(1.35) rotate(12deg)}}
+@keyframes shimmer{from{opacity:0.7}to{opacity:1}}
 
-  .pound-wrap { position: relative; }
-  .pound-wrap::before {
-    content: '£'; position: absolute;
-    left: 11px; top: 50%; transform: translateY(-50%);
-    color: var(--muted); font-size: 13px; pointer-events: none;
-  }
-  .pound-wrap input { padding-left: 22px; }
+/* ── AERO GLASS ── */
+.glass{
+  background:rgba(10,14,34,0.52);
+  backdrop-filter:blur(32px) saturate(180%) brightness(1.08);
+  -webkit-backdrop-filter:blur(32px) saturate(180%) brightness(1.08);
+  border-color:rgba(100,130,220,0.18) !important;
+}
 
-  .fee-hint {
-    font-size: 12px; color: var(--blue);
-    background: var(--blue-dim); border: 1px solid #1a3a6a;
-    border-radius: var(--radius-sm); padding: 8px 12px;
-    margin-top: 12px; line-height: 1.6;
-  }
-  .fee-hint span { font-weight: 600; }
+/* ── HEADER — Aero glass bar ── */
+.header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(8,11,28,0.55);
+  backdrop-filter:blur(36px) saturate(200%) brightness(1.1);
+  -webkit-backdrop-filter:blur(36px) saturate(200%) brightness(1.1);
+  border-bottom:1px solid rgba(120,150,230,0.2);
+  box-shadow:0 1px 0 rgba(180,200,255,0.06), 0 4px 20px rgba(0,0,0,0.3);
+  padding:0 28px;height:58px;
+  display:flex;align-items:center;gap:14px;
+}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-icon{
+  width:32px;height:32px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 22px rgba(168,85,247,0.5);
+  flex-shrink:0;
+}
+.logo-text{font-size:15px;font-weight:800;color:var(--text);letter-spacing:-0.4px}
+.logo-text span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header-pills{margin-left:auto;display:flex;gap:8px;align-items:center}
+.pill{font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px;letter-spacing:0.07em;text-transform:uppercase}
+.pill-purple{background:var(--accentbg);color:var(--accent);border:1px solid var(--accentbd)}
+.pill-cyan{background:var(--greenbg);color:var(--green2);border:1px solid var(--greenbd)}
 
-  .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
-  .note { font-size: 12px; color: var(--muted); line-height: 1.7; margin-top: 10px; }
+/* ── HERO — Aero glass panel ── */
+.hero{
+  padding:44px 28px 32px;
+  border-bottom:1px solid rgba(100,130,210,0.18);
+  position:relative;z-index:1;
+  overflow:hidden;
+  background:rgba(8,11,28,0.38);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+/* Aero rainbow top border */
+.hero::before{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:2px;
+  background:linear-gradient(to right,transparent 0%,rgba(120,80,220,0.6) 20%,rgba(180,60,200,0.7) 40%,rgba(30,160,220,0.7) 70%,transparent 100%);
+}
+/* Aero gloss sheen on hero */
+.hero::after{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:50%;
+  background:linear-gradient(180deg,rgba(160,180,255,0.04) 0%,transparent 100%);
+  pointer-events:none;
+}
+.hero-eyebrow{
+  font-size:11px;font-weight:600;letter-spacing:0.13em;text-transform:uppercase;
+  margin-bottom:12px;display:flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,var(--accent2),var(--green2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-eyebrow::before{content:'';width:16px;height:1.5px;background:linear-gradient(to right,var(--accent2),var(--green2));display:block;flex-shrink:0}
+.hero h1{
+  font-size:34px;font-weight:800;letter-spacing:-1.2px;line-height:1.1;
+  color:var(--text);margin-bottom:12px;
+}
+.hero h1 span{
+  background:linear-gradient(135deg,var(--accent),var(--accent2) 40%,var(--green2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero p{font-size:14px;color:var(--sub);line-height:1.7;max-width:500px}
 
-  /* SINGLE RESULTS */
-  #results { display: none; }
-  .metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
-  @media (max-width: 480px) { .metrics { grid-template-columns: 1fr 1fr; } }
+/* ── TABS — Aero glass bar ── */
+.tab-bar{
+  display:flex;gap:0;
+  border-bottom:1px solid rgba(100,130,210,0.18);
+  padding:0 28px;
+  background:rgba(6,9,24,0.5);
+  backdrop-filter:blur(28px) saturate(180%);
+  -webkit-backdrop-filter:blur(28px) saturate(180%);
+  box-shadow:0 1px 0 rgba(160,180,255,0.05);
+  position:sticky;top:58px;z-index:90;
+}
+.tab{
+  padding:13px 18px;font-size:13px;font-weight:500;
+  color:var(--muted);cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:all 0.2s;user-select:none;
+  display:flex;align-items:center;gap:7px;white-space:nowrap;
+}
+.tab:hover{color:var(--sub)}
+.tab.active{
+  color:var(--accent);border-bottom-color:var(--accent);font-weight:600;
+}
+.tab svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-  .metric {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 14px 16px;
-  }
-  .metric-label { font-size: 11px; color: var(--muted); margin-bottom: 5px; }
-  .metric-value { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 500; }
-  .metric-value.green { color: var(--green); }
-  .metric-value.amber { color: var(--accent); }
-  .metric.highlight { background: var(--green-dim); border-color: #1a5c3a; }
-  .metric.highlight .metric-label { color: #5ae0a0; }
+/* ── LAYOUT ── */
+.main{max-width:980px;margin:0 auto;padding:28px 20px 80px;position:relative;z-index:1}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cols3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media(max-width:700px){.cols,.cols3{grid-template-columns:1fr 1fr}}
+@media(max-width:440px){.cols,.cols3{grid-template-columns:1fr}}
+.panel{display:none}
+.panel.active{display:block;animation:fadeUp 0.25s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-  .breakdown-title { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
-  .breakdown-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
-  .breakdown-row:last-child { border-bottom: none; }
-  .breakdown-row .val { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text); font-weight: 500; }
-  .breakdown-row.sp-row { color: var(--text); font-weight: 500; }
-  .breakdown-row.sp-row .val { color: var(--green); font-size: 15px; }
-  .breakdown-row.total-row { border-top: 1px solid var(--border2); margin-top: 4px; padding-top: 10px; color: var(--text); font-weight: 600; border-bottom: none; }
-  .breakdown-row.total-row .val { color: var(--green); font-size: 15px; }
+/* ── SECTION LABEL ── */
+.slabel{
+  font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:10px;
+}
+.slabel svg{width:12px;height:12px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.slabel::after{content:'';flex:1;height:1px;background:linear-gradient(to right,var(--border),transparent)}
 
-  #empty { text-align: center; padding: 40px 20px; color: var(--muted); }
-  #empty .empty-icon { font-size: 36px; margin-bottom: 12px; }
+/* ── CARD — Aero frosted glass panels ── */
+.card{
+  background:rgba(14,18,42,0.45);
+  backdrop-filter:blur(20px) saturate(150%);
+  -webkit-backdrop-filter:blur(20px) saturate(150%);
+  border:1px solid rgba(120,150,230,0.18);
+  border-radius:var(--r3);
+  padding:22px;margin-bottom:14px;
+  transition:border-color 0.2s,box-shadow 0.2s,background 0.2s;
+  position:relative;overflow:hidden;
+  box-shadow:0 4px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(180,200,255,0.08);
+}
+/* Aero top-sheen highlight on cards */
+.card::before{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:40%;
+  background:linear-gradient(180deg,rgba(160,180,255,0.06) 0%,transparent 100%);
+  border-radius:var(--r3) var(--r3) 0 0;
+  pointer-events:none;
+}
+.card:hover{
+  border-color:rgba(160,180,255,0.28);
+  box-shadow:0 6px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(200,220,255,0.12);
+  background:rgba(18,22,50,0.5);
+}
+.card-inset{
+  background:rgba(10,14,32,0.4);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(100,130,220,0.15);
+  border-radius:var(--r2);padding:16px;margin-bottom:14px;
+  box-shadow:inset 0 1px 0 rgba(150,170,255,0.06);
+}
 
-  /* BULK MODE */
-  .bulk-options { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
-  .opt-btn {
-    padding: 8px 16px; border-radius: var(--radius-sm);
-    font-size: 13px; font-weight: 500; cursor: pointer;
-    border: 1px solid var(--border2); background: var(--surface2);
-    color: var(--muted); transition: all 0.15s;
-  }
-  .opt-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .opt-btn.active { background: var(--accent); border-color: var(--accent); color: #000; }
+/* ── FIELDS ── */
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{
+  font-size:11px;font-weight:600;color:var(--muted);
+  letter-spacing:0.06em;text-transform:uppercase;
+  display:flex;align-items:center;gap:5px;
+}
+.field label svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.field input,.field select{
+  background:rgba(10,14,36,0.6);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(100,130,210,0.22);
+  border-radius:var(--r);color:var(--text);
+  font-family:'Inter',sans-serif;font-size:14px;
+  padding:10px 13px;outline:none;
+  transition:border-color 0.2s,box-shadow 0.2s,background 0.2s;
+  width:100%;-webkit-appearance:none;appearance:none;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.03);
+}
+.field select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2355557a' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;
+}
+.field input:focus,.field select:focus{
+  border-color:rgba(120,160,255,0.55);
+  box-shadow:0 0 0 3px rgba(100,140,240,0.15), inset 0 1px 3px rgba(0,0,0,0.25);
+  background:rgba(14,18,44,0.75);
+}
+.field input::placeholder{color:var(--muted)}
+.pw{position:relative}
+.pw::before{
+  content:'£';position:absolute;
+  left:12px;top:50%;transform:translateY(-50%);
+  color:var(--accent);font-size:13px;pointer-events:none;
+  font-family:'JetBrains Mono',monospace;font-weight:600;
+}
+.pw input{padding-left:26px;font-family:'JetBrains Mono',monospace}
 
-  .bulk-textarea {
-    width: 100%;
-    background: var(--surface2); border: 1px solid var(--border2);
-    border-radius: var(--radius-sm); color: var(--text);
-    font-family: 'JetBrains Mono', monospace; font-size: 13px;
-    padding: 12px; outline: none; resize: vertical;
-    min-height: 140px; line-height: 1.6;
-    transition: border-color 0.15s;
-  }
-  .bulk-textarea:focus { border-color: var(--accent); }
-  .bulk-textarea::placeholder { color: var(--muted); }
+/* ── HINT BOX ── */
+.hint-box{
+  display:flex;align-items:flex-start;gap:10px;
+  background:var(--bluebg);border:1px solid var(--bluebd);
+  border-radius:var(--r);padding:10px 13px;margin-top:14px;
+  font-size:12px;color:var(--blue);line-height:1.6;
+}
+.hint-box svg{width:14px;height:14px;stroke:var(--blue);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;margin-top:1px}
+.hint-box b{color:#93c5fd}
 
-  .bulk-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+/* ── NOTE ── */
+.note{font-size:12px;color:var(--muted);line-height:1.8;margin-top:12px}
+.note b{color:var(--sub)}
+hr.div{border:none;border-top:1px solid var(--border);margin:18px 0}
 
-  .btn {
-    padding: 9px 20px; border-radius: var(--radius-sm);
-    font-size: 13px; font-weight: 600; cursor: pointer;
-    border: none; transition: opacity 0.15s;
-  }
-  .btn:hover { opacity: 0.85; }
-  .btn-primary { background: var(--accent); color: #000; }
-  .btn-outline { background: transparent; border: 1px solid var(--border2); color: var(--muted); }
-  .btn-outline:hover { border-color: var(--green); color: var(--green); }
-  .btn-green { background: var(--green); color: #000; }
+/* ── RESULT HERO — Aero glass panel ── */
+#s-results{display:none}
+.result-hero{
+  border-radius:var(--r4);padding:28px 30px;margin-bottom:14px;
+  position:relative;overflow:hidden;
+  background:rgba(12,16,44,0.48);
+  backdrop-filter:blur(28px) saturate(160%);
+  -webkit-backdrop-filter:blur(28px) saturate(160%);
+  border:1px solid rgba(140,170,255,0.22);
+  box-shadow:0 8px 40px rgba(0,0,0,0.4),inset 0 1px 0 rgba(200,220,255,0.10),inset 0 -1px 0 rgba(100,140,255,0.05);
+}
+/* Aero top gloss strip */
+.result-hero::before{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:45%;
+  background:linear-gradient(180deg,rgba(180,200,255,0.08) 0%,rgba(140,170,255,0.02) 60%,transparent 100%);
+  pointer-events:none;z-index:1;
+}
+.result-hero-bg{position:absolute;inset:0;z-index:0;
+  background:linear-gradient(135deg,rgba(100,80,200,0.08) 0%,rgba(30,160,220,0.05) 60%,transparent 100%)}
+.result-hero-glow{
+  position:absolute;top:-120px;right:-120px;
+  width:380px;height:380px;
+  background:radial-gradient(circle,rgba(120,80,220,0.18) 0%,transparent 65%);
+  z-index:0;filter:blur(20px);
+}
+.result-hero-glow2{
+  position:absolute;bottom:-100px;left:-80px;
+  width:280px;height:280px;
+  background:radial-gradient(circle,rgba(30,160,220,0.12) 0%,transparent 65%);
+  z-index:0;filter:blur(25px);
+}
+.result-hero-content{position:relative;z-index:2}
+.rh-eyebrow{
+  font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:8px;display:flex;align-items:center;gap:6px;
+}
+.rh-eyebrow svg{width:12px;height:12px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.rh-sp{
+  font-size:58px;font-weight:800;letter-spacing:-2.5px;line-height:1;
+  background:linear-gradient(135deg,var(--green2) 0%,#a7f3d0 60%,var(--green) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:12px;
+}
+.rh-meta{display:flex;gap:10px;flex-wrap:wrap}
+.rh-chip{
+  font-size:12px;color:var(--sub);
+  background:rgba(255,255,255,0.05);
+  border:1px solid var(--border2);border-radius:99px;
+  padding:4px 12px;font-family:'JetBrains Mono',monospace;
+}
+.rh-chip b{color:var(--text)}
 
-  .bulk-hint { font-size: 12px; color: var(--muted); margin-left: auto; }
+/* ── KPI CARDS — Aero glass ── */
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+@media(max-width:500px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi{
+  border-radius:var(--r2);padding:16px;
+  position:relative;overflow:hidden;
+  background:rgba(12,16,42,0.5);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  transition:transform 0.2s,box-shadow 0.2s;
+  box-shadow:0 4px 16px rgba(0,0,0,0.3),inset 0 1px 0 rgba(180,200,255,0.07);
+}
+/* Aero gloss on KPI cards */
+.kpi::after{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:50%;
+  background:linear-gradient(180deg,rgba(160,180,255,0.06) 0%,transparent 100%);
+  pointer-events:none;border-radius:var(--r2) var(--r2) 0 0;
+}
+.kpi:hover{transform:translateY(-2px)}
+.kpi-margin{border:1px solid rgba(168,85,247,0.3)}
+.kpi-margin:hover{box-shadow:0 8px 28px rgba(0,0,0,0.4),0 0 20px rgba(120,80,220,0.2)}
+.kpi-profit{border:1px solid rgba(6,182,212,0.3)}
+.kpi-profit:hover{box-shadow:0 8px 28px rgba(0,0,0,0.4),0 0 20px rgba(30,160,220,0.18)}
+.kpi-fees{border:1px solid rgba(249,115,22,0.25)}
+.kpi-fees:hover{box-shadow:0 8px 28px rgba(0,0,0,0.4),0 0 20px rgba(200,100,20,0.15)}
+.kpi-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.kpi-icon svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.kpi-icon.purple{background:rgba(168,85,247,0.2);color:var(--accent)}
+.kpi-icon.cyan{background:rgba(6,182,212,0.2);color:var(--green2)}
+.kpi-icon.orange{background:rgba(249,115,22,0.2);color:var(--amber)}
+.kpi-label{font-size:11px;color:var(--sub);font-weight:500;margin-bottom:5px;opacity:0.8}
+.kpi-value{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600;color:var(--text)}
+.kpi-value.purple{color:var(--accent)}
+.kpi-value.cyan{color:var(--green2)}
+.kpi-value.orange{color:var(--amber)}
+.kpi-value.green{color:var(--green2)}
+.kpi-value.amber{color:var(--amber)}
 
-  /* BULK RESULTS TABLE */
-  #bulk-results { display: none; margin-top: 14px; }
-  .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+/* ── FEE BAR ── */
+.fee-bar-wrap{margin-bottom:16px}
+.fee-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px}
+.fee-bar{height:8px;background:var(--s3);border-radius:99px;overflow:hidden;display:flex;gap:2px}
+.fee-bar-seg{height:100%;border-radius:99px;transition:width 0.6s cubic-bezier(0.34,1.56,0.64,1)}
+.seg-green{background:linear-gradient(to right,var(--green),var(--green2))}
+.seg-indigo{background:linear-gradient(to right,var(--accent),var(--accent2))}
+.seg-amber{background:linear-gradient(to right,var(--amber),#fb923c)}
+.seg-red{background:linear-gradient(to right,var(--red),#fb7185)}
+.fee-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+.fee-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sub)}
+.fee-leg-dot{width:8px;height:8px;border-radius:99px;flex-shrink:0}
 
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  thead tr { background: var(--surface2); }
-  thead th {
-    padding: 10px 14px; text-align: left;
-    font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--muted);
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
-  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
-  tbody tr:last-child { border-bottom: none; }
-  tbody tr:hover { background: var(--surface2); }
-  tbody td { padding: 10px 14px; color: var(--muted); white-space: nowrap; }
-  tbody td.mono { font-family: 'JetBrains Mono', monospace; color: var(--text); }
-  tbody td.green { font-family: 'JetBrains Mono', monospace; color: var(--green); font-weight: 500; }
-  tbody td.amber { font-family: 'JetBrains Mono', monospace; color: var(--accent); font-weight: 500; }
-  tbody td.err   { color: var(--red); font-size: 12px; }
-  tbody td.label { color: var(--text); }
+/* ── BREAKDOWN TABLE ── */
+.bk-row{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:13px;padding:9px 0;
+  border-bottom:1px solid var(--border);color:var(--sub);
+  transition:padding-left 0.15s;gap:12px;
+}
+.bk-row:last-child{border-bottom:none}
+.bk-row:hover{padding-left:4px;color:var(--text)}
+.bk-row-left{display:flex;align-items:center;gap:8px}
+.bk-row-left svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;opacity:0.6}
+.bk-val{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text);font-weight:500;flex-shrink:0}
+.bk-row.bk-sp{color:var(--text);font-weight:600}
+.bk-row.bk-sp .bk-val{color:var(--green2);font-size:15px;font-weight:700}
+.bk-row.bk-tot{
+  border-top:1px solid var(--border2);margin-top:6px;padding-top:14px;
+  color:var(--text);font-weight:700;border-bottom:none;
+  background:linear-gradient(to right,rgba(6,182,212,0.06),transparent);
+  border-radius:6px;padding-left:8px;padding-right:8px;
+}
+.bk-row.bk-tot .bk-val{
+  background:linear-gradient(135deg,var(--green2),var(--green));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  font-size:17px;
+}
 
-  .bulk-summary {
-    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
-  }
-  .bulk-stat {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 10px 16px;
-    font-size: 12px; color: var(--muted);
-  }
-  .bulk-stat strong { font-family: 'JetBrains Mono', monospace; color: var(--text); display: block; font-size: 18px; margin-bottom: 2px; }
+/* ── EMPTY ── */
+.empty-state{text-align:center;padding:64px 24px;color:var(--muted)}
+.empty-icon{
+  width:56px;height:56px;
+  background:linear-gradient(135deg,var(--accentbg),var(--greenbg));
+  border:1px solid var(--border);border-radius:var(--r2);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 16px;
+}
+.empty-icon svg{width:24px;height:24px;stroke:var(--accent);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.empty-state p{font-size:14px}
 
-  .upload-zone {
-    border: 2px dashed var(--border2); border-radius: var(--radius);
-    padding: 28px; text-align: center; cursor: pointer;
-    transition: border-color 0.15s; margin-bottom: 12px;
-  }
-  .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); }
-  .upload-zone p { color: var(--muted); font-size: 13px; }
-  .upload-zone .uz-icon { font-size: 28px; margin-bottom: 8px; }
-  .upload-zone input { display: none; }
-  .upload-zone .uz-sub { font-size: 11px; margin-top: 6px; }
+/* ── BULK ── */
+.mode-btns{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.mode-btn{
+  padding:8px 15px;border-radius:var(--r);
+  font-size:12px;font-weight:600;cursor:pointer;
+  border:1px solid var(--border2);background:var(--s2);
+  color:var(--muted);transition:all 0.15s;
+  display:flex;align-items:center;gap:6px;letter-spacing:0.02em;
+}
+.mode-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mode-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accentbg)}
+.mode-btn.active{
+  background:linear-gradient(135deg,rgba(168,85,247,0.15),rgba(217,70,239,0.08));
+  border-color:var(--accentbd);color:var(--accent2);
+}
 
-  .footer {
-    text-align: center; font-size: 11px; color: var(--muted);
-    padding: 24px; border-top: 1px solid var(--border); margin-top: 20px;
-  }
+.bulk-ta{
+  width:100%;
+  background:rgba(8,12,32,0.55);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(100,130,210,0.22);
+  border-radius:var(--r2);color:var(--text);
+  font-family:'JetBrains Mono',monospace;font-size:13px;
+  padding:14px;outline:none;resize:vertical;min-height:148px;line-height:1.7;
+  transition:border-color 0.2s,box-shadow 0.2s;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,0.3);
+}
+.bulk-ta:focus{
+  border-color:rgba(120,160,255,0.45);
+  box-shadow:0 0 0 3px rgba(100,140,240,0.12),inset 0 2px 6px rgba(0,0,0,0.25);
+}
+.bulk-ta::placeholder{color:var(--muted)}
+
+.bulk-actions{display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap}
+.row-count{font-size:12px;color:var(--muted);margin-left:auto}
+.row-count b{color:var(--green2)}
+
+/* ── BUTTONS ── */
+.btn{
+  padding:10px 20px;border-radius:var(--r);
+  font-size:13px;font-weight:600;cursor:pointer;
+  border:none;transition:all 0.18s;
+  display:inline-flex;align-items:center;gap:7px;
+  letter-spacing:0.02em;white-space:nowrap;
+}
+.btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);
+  color:#fff;
+  box-shadow:0 4px 16px rgba(168,85,247,0.4),0 1px 0 rgba(255,255,255,0.1) inset;
+}
+.btn-primary:hover{box-shadow:0 6px 24px rgba(168,85,247,0.55);transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-ghost{background:var(--s2);border:1px solid var(--border2);color:var(--sub)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);background:var(--accentbg)}
+.btn-green{
+  background:linear-gradient(135deg,var(--green) 0%,var(--green2) 100%);
+  color:#0a1a1f;font-weight:700;
+  box-shadow:0 4px 16px rgba(6,182,212,0.35),0 1px 0 rgba(255,255,255,0.2) inset;
+}
+.btn-green:hover{box-shadow:0 6px 24px rgba(6,182,212,0.5);transform:translateY(-1px)}
+
+/* ── DROP ZONE ── */
+.drop-zone{
+  border:2px dashed var(--border2);border-radius:var(--r2);
+  padding:36px;text-align:center;cursor:pointer;
+  transition:all 0.2s;margin-bottom:12px;
+}
+.drop-zone:hover,.drop-zone.over{
+  border-color:var(--accent);
+  background:linear-gradient(135deg,rgba(168,85,247,0.06),rgba(217,70,239,0.04));
+}
+.dz-icon{
+  width:48px;height:48px;
+  background:linear-gradient(135deg,var(--accentbg),rgba(217,70,239,0.08));
+  border:1px solid var(--accentbd);border-radius:var(--r2);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 12px;
+}
+.dz-icon svg{width:20px;height:20px;stroke:var(--accent);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.dz-title{font-size:14px;color:var(--sub);font-weight:500}
+.dz-sub{font-size:12px;color:var(--muted);margin-top:5px}
+.drop-zone input{display:none}
+
+/* ── MANUAL ROWS ── */
+.mrow{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 36px;gap:8px;margin-bottom:8px;align-items:end}
+@media(max-width:600px){.mrow{grid-template-columns:1fr 1fr}}
+.mrow-del{
+  width:36px;height:38px;
+  background:var(--s3);border:1px solid var(--border2);
+  border-radius:var(--r);color:var(--muted);cursor:pointer;
+  font-size:13px;display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;flex-shrink:0;
+}
+.mrow-del:hover{border-color:var(--red);color:var(--red);background:var(--redbg)}
+.mrow-del svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── BULK RESULTS ── */
+#bulk-results{display:none;margin-top:14px;animation:fadeUp 0.25s ease}
+.summary-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.sstat{
+  border-radius:var(--r2);padding:14px 16px;
+  background:rgba(12,16,42,0.5);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(120,150,220,0.18);
+  box-shadow:0 4px 16px rgba(0,0,0,0.28),inset 0 1px 0 rgba(180,200,255,0.06);
+  transition:transform 0.15s,box-shadow 0.15s;
+}
+.sstat:nth-child(1){border-color:rgba(168,85,247,0.25)}
+.sstat:nth-child(2){border-color:rgba(6,182,212,0.25)}
+.sstat:nth-child(3){border-color:rgba(234,179,8,0.2)}
+.sstat:nth-child(4){border-color:rgba(249,115,22,0.2)}
+.sstat:nth-child(5){border-color:rgba(6,182,212,0.2)}
+.sstat:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.35),inset 0 1px 0 rgba(200,220,255,0.08)}
+.sstat-val{
+  font-size:22px;font-weight:700;margin-bottom:3px;
+  font-family:'JetBrains Mono',monospace;letter-spacing:-0.5px;color:var(--text);
+}
+.sstat-val.green{color:var(--green2)}
+.sstat-label{font-size:11px;color:var(--muted);font-weight:500}
+
+/* ── TABLE ── */
+.tbl-wrap{border-radius:var(--r2);border:1px solid var(--border);overflow:hidden;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:linear-gradient(to right,rgba(168,85,247,0.06),rgba(6,182,212,0.04))}
+thead th{padding:11px 16px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background 0.12s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(168,85,247,0.04)}
+tbody td{padding:11px 16px;color:var(--sub);white-space:nowrap}
+td.mono{font-family:'JetBrains Mono',monospace;color:var(--text)}
+td.green{font-family:'JetBrains Mono',monospace;color:var(--green2);font-weight:600}
+td.amber{font-family:'JetBrains Mono',monospace;color:var(--amber);font-weight:600}
+td.err{color:var(--red);font-size:12px}
+td.lbl{color:var(--text);font-weight:500;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+td.num{font-family:'JetBrains Mono',monospace;color:var(--muted)}
+.result-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--s1)}
+::-webkit-scrollbar-thumb{background:linear-gradient(to bottom,var(--accent),var(--accent2));border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent2)}
+
+/* ── FOOTER ── */
+.footer{
+  text-align:center;font-size:11px;color:var(--muted);
+  padding:24px;border-top:1px solid rgba(100,130,210,0.15);
+  position:relative;z-index:1;
+  background:rgba(6,8,20,0.4);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+.footer b{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
 </style>
 </head>
 <body>
+<div class="bg-grad"><div class="bg-mid"></div><div class="bg-stars"></div><div class="bg-sheen"></div></div>
 
-<header class="header">
-  <div class="header-logo">📦</div>
-  <div class="header-text">
-    <h1>Amazon UK SP Calculator</h1>
-    <p>FBA · VAT-inclusive · Tiered referral fees</p>
+<!-- HEADER -->
+<header class="header glass">
+  <a class="logo" href="#">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </div>
+    <span class="logo-text">SP<span>calc</span></span>
+  </a>
+  <div class="header-pills">
+    <span class="pill pill-purple">FBA</span>
+    <span class="pill pill-cyan">Amazon UK</span>
   </div>
-  <div class="header-badge">UK Marketplace</div>
 </header>
 
-<div class="tabs">
-  <div class="tab active" onclick="switchTab('single')">Single lookup</div>
-  <div class="tab" onclick="switchTab('bulk')">Bulk calculator</div>
+<!-- HERO -->
+<div class="hero glass">
+  <p class="hero-eyebrow">Amazon UK · FBA Pricing Tool</p>
+  <h1>Calculate your <span>selling price</span><br/>with precision.</h1>
+  <p>Tiered referral fees, VAT, DST, and FBA costs — all computed from your exact cost. Single lookup or bulk mode.</p>
 </div>
+
+<!-- TABS -->
+<nav class="tab-bar glass">
+  <div class="tab active" onclick="switchTab('single')">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    Single lookup
+  </div>
+  <div class="tab" onclick="switchTab('bulk')">
+    <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    Bulk calculator
+  </div>
+</nav>
 
 <main class="main">
 
-  <!-- ========== SINGLE PANEL ========== -->
-  <div class="panel active" id="panel-single">
+<!-- ══ SINGLE ══ -->
+<div class="panel active" id="panel-single">
+  <div class="cols" style="margin-bottom:0">
 
-    <div class="card">
-      <p class="section-label">Product</p>
-      <div class="grid2" style="margin-bottom:12px;">
-        <div class="field">
-          <label>Category</label>
-          <select id="category" onchange="onCategoryChange()">
-            <optgroup label="Most used">
-              <option value="beauty">Beauty, Health &amp; Personal Care</option>
-              <option value="home">Home Products</option>
-              <option value="baby">Baby Products</option>
-              <option value="grocery">Grocery &amp; Gourmet Foods</option>
-            </optgroup>
-            <optgroup label="Other categories">
-              <option value="clothing">Clothing &amp; Accessories</option>
-              <option value="pet_clothing">Pet Clothing</option>
-              <option value="jewellery">Jewellery</option>
-              <option value="watches">Watches</option>
-            </optgroup>
-          </select>
-        </div>
-        <div class="field">
-          <label>Target margin (%)</label>
-          <input type="number" id="target" value="5.15" min="0" max="80" step="0.05" oninput="calc()" />
-        </div>
-      </div>
-      <div class="fee-hint" id="fee-hint"></div>
-    </div>
-
-    <div class="card">
-      <p class="section-label">Costs</p>
-      <div class="grid3">
-        <div class="field">
-          <label>Cost of goods, ex-VAT</label>
-          <div class="pound-wrap">
-            <input type="number" id="cost" placeholder="7.29" min="0" step="0.01" oninput="calc()" />
-          </div>
-        </div>
-        <div class="field">
-          <label>FBA fulfilment fee</label>
-          <div class="pound-wrap">
-            <input type="number" id="fulfilment" placeholder="2.76" min="0" step="0.01" oninput="calc()" />
-          </div>
-        </div>
-        <div class="field">
-          <label>Storage cost</label>
-          <div class="pound-wrap">
-            <input type="number" id="storage" value="0.00" min="0" step="0.01" oninput="calc()" />
-          </div>
-        </div>
-      </div>
-      <p class="note">DST: 2% on referral + 2% on fulfilment &nbsp;·&nbsp; VAT: SP × 20/120 &nbsp;·&nbsp; SP snapped to nearest allowed price ending</p>
-    </div>
-
-    <div id="results">
+    <div>
       <div class="card">
-        <p class="section-label">Results</p>
-        <div class="metrics">
-          <div class="metric highlight">
-            <p class="metric-label">Recommended SP</p>
-            <p class="metric-value green" id="r-sp">—</p>
-          </div>
-          <div class="metric">
-            <p class="metric-label">Actual margin</p>
-            <p class="metric-value" id="r-margin">—</p>
-          </div>
-          <div class="metric">
-            <p class="metric-label">Net profit</p>
-            <p class="metric-value green" id="r-profit">—</p>
-          </div>
-        </div>
-        <hr class="divider" />
-        <p class="breakdown-title">Full breakdown</p>
-        <div id="breakdown-rows"></div>
-      </div>
-    </div>
-
-    <div id="empty">
-      <div class="empty-icon">🧮</div>
-      <p>Enter your cost and FBA fulfilment fee to calculate the selling price.</p>
-    </div>
-
-  </div><!-- /panel-single -->
-
-  <!-- ========== BULK PANEL ========== -->
-  <div class="panel" id="panel-bulk">
-
-    <div class="card">
-      <p class="section-label">Bulk settings</p>
-      <div class="grid2">
-        <div class="field">
-          <label>Category (applied to all rows)</label>
-          <select id="bulk-category" onchange="bulkCategoryHint()">
-            <optgroup label="Most used">
-              <option value="beauty">Beauty, Health &amp; Personal Care</option>
-              <option value="home">Home Products</option>
-              <option value="baby">Baby Products</option>
-              <option value="grocery">Grocery &amp; Gourmet Foods</option>
-            </optgroup>
-            <optgroup label="Other categories">
-              <option value="clothing">Clothing &amp; Accessories</option>
-              <option value="pet_clothing">Pet Clothing</option>
-              <option value="jewellery">Jewellery</option>
-              <option value="watches">Watches</option>
-            </optgroup>
-          </select>
-        </div>
-        <div class="field">
-          <label>Target margin (%) — applied to all rows</label>
-          <input type="number" id="bulk-target" value="5.15" min="0" max="80" step="0.05" />
-        </div>
-      </div>
-      <div class="fee-hint" id="bulk-fee-hint" style="margin-top:12px;"></div>
-    </div>
-
-    <div class="card">
-      <p class="section-label">Input method</p>
-
-      <div class="bulk-options">
-        <div class="opt-btn active" onclick="setInputMode('paste')" id="mode-paste">Paste data</div>
-        <div class="opt-btn" onclick="setInputMode('upload')" id="mode-upload">Upload CSV / Excel</div>
-        <div class="opt-btn" onclick="setInputMode('manual')" id="mode-manual">Type rows manually</div>
-      </div>
-
-      <!-- PASTE MODE -->
-      <div id="input-paste">
-        <p class="note" style="margin-bottom:8px;">
-          Paste two columns: <strong style="color:var(--text);">Cost</strong> and <strong style="color:var(--text);">FBA fee</strong> — copied from Excel, Google Sheets, or any tab/comma separated data. Header row optional. You can also include an optional third column for a <strong style="color:var(--text);">label/ASIN/SKU</strong>.
+        <p class="slabel">
+          <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          Category
         </p>
-        <textarea class="bulk-textarea" id="paste-area" placeholder="7.29&#9;2.76&#10;5.50&#9;2.43&#10;12.00&#9;3.10&#10;&#10;Or with labels:&#10;B0918FHY6P&#9;7.29&#9;2.76&#10;SKU-002&#9;5.50&#9;2.43"></textarea>
-        <div class="bulk-actions">
-          <button class="btn btn-primary" onclick="runBulk()">Calculate all</button>
-          <button class="btn btn-outline" onclick="clearBulk()">Clear</button>
-          <span class="bulk-hint" id="paste-count"></span>
+        <div class="field" style="margin-bottom:12px">
+          <label>
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Select category
+          </label>
+          <select id="s-cat" onchange="sCatChange()">
+            <optgroup label="⭐ Most used">
+              <option value="beauty">Beauty, Health &amp; Personal Care</option>
+              <option value="home">Home Products</option>
+              <option value="baby">Baby Products</option>
+              <option value="grocery">Grocery &amp; Gourmet Foods</option>
+            </optgroup>
+            <optgroup label="All categories">
+              <option value="clothing">Clothing &amp; Accessories</option>
+              <option value="electronics_acc">Electronic Accessories</option>
+              <option value="pet_clothing">Pet Clothing</option>
+              <option value="jewellery">Jewellery</option>
+              <option value="watches">Watches</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="hint-box" id="s-hint">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="s-hint-text"></span>
         </div>
       </div>
 
-      <!-- UPLOAD MODE -->
-      <div id="input-upload" style="display:none;">
-        <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
-          <div class="uz-icon">📂</div>
-          <p>Click to upload or drag &amp; drop a CSV file</p>
-          <p class="uz-sub" style="color:var(--muted);">CSV with columns: Cost, FBA Fee (header row optional). Label/ASIN column optional.</p>
-          <input type="file" id="file-input" accept=".csv,.txt" onchange="handleFile(event)" />
-        </div>
-        <div class="bulk-actions">
-          <button class="btn btn-primary" onclick="runBulk()">Calculate all</button>
-          <button class="btn btn-outline" onclick="clearBulk()">Clear</button>
-          <span class="bulk-hint" id="upload-count"></span>
-        </div>
-      </div>
-
-      <!-- MANUAL MODE -->
-      <div id="input-manual" style="display:none;">
-        <p class="note" style="margin-bottom:10px;">Add rows one by one. Storage cost per row is optional.</p>
-        <div id="manual-rows"></div>
-        <button class="btn btn-outline" onclick="addManualRow()" style="margin-top:10px;">+ Add row</button>
-        <div class="bulk-actions" style="margin-top:10px;">
-          <button class="btn btn-primary" onclick="runBulk()">Calculate all</button>
-          <button class="btn btn-outline" onclick="clearBulk()">Clear rows</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- BULK RESULTS -->
-    <div id="bulk-results">
       <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
-          <p class="section-label" style="margin:0;">Results</p>
-          <button class="btn btn-green" onclick="downloadCSV()">⬇ Download CSV</button>
+        <p class="slabel">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          Costs
+        </p>
+        <div class="field" style="margin-bottom:12px">
+          <label>Cost of goods, ex-VAT</label>
+          <div class="pw"><input type="number" id="s-cost" placeholder="7.29" min="0" step="0.01" oninput="sCalc()"/></div>
         </div>
-        <div class="bulk-summary" id="bulk-summary"></div>
-        <div class="table-wrap">
-          <table id="bulk-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Label / SKU</th>
-                <th>Cost</th>
-                <th>FBA Fee</th>
-                <th>Recommended SP</th>
-                <th>Margin %</th>
-                <th>Net Profit</th>
-                <th>Referral Rate</th>
-              </tr>
-            </thead>
-            <tbody id="bulk-tbody"></tbody>
-          </table>
+        <div class="field" style="margin-bottom:12px">
+          <label>FBA fulfilment fee</label>
+          <div class="pw"><input type="number" id="s-fba" placeholder="2.76" min="0" step="0.01" oninput="sCalc()"/></div>
         </div>
+        <div class="cols" style="margin-bottom:0">
+          <div class="field">
+            <label>Storage cost</label>
+            <div class="pw"><input type="number" id="s-stor" value="0.00" min="0" step="0.01" oninput="sCalc()"/></div>
+          </div>
+          <div class="field">
+            <label>Target margin %</label>
+            <input type="number" id="s-tgt" value="5.15" min="0" max="80" step="0.05" oninput="sCalc()"/>
+          </div>
+        </div>
+        <p class="note"><b>DST:</b> 2% on referral + 2% on FBA &nbsp;·&nbsp; <b>VAT:</b> SP × 20/120 &nbsp;·&nbsp; SP snapped to price ending</p>
       </div>
     </div>
 
-  </div><!-- /panel-bulk -->
+    <div>
+      <div id="s-results">
+        <div class="result-hero">
+          <div class="result-hero-bg"></div>
+          <div class="result-hero-glow"></div>
+          <div class="result-hero-glow2"></div>
+          <div class="result-hero-content">
+            <p class="rh-eyebrow">
+              <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              Recommended selling price
+            </p>
+            <p class="rh-sp" id="rh-sp">£—</p>
+            <div class="rh-meta">
+              <span class="rh-chip">Ex-VAT: <b id="rh-exvat">—</b></span>
+              <span class="rh-chip">VAT: <b id="rh-vat">—</b></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi kpi-margin">
+            <div class="kpi-icon purple">
+              <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <p class="kpi-label">Actual margin</p>
+            <p class="kpi-value purple" id="kpi-margin">—</p>
+          </div>
+          <div class="kpi kpi-profit">
+            <div class="kpi-icon cyan">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            </div>
+            <p class="kpi-label">Net profit</p>
+            <p class="kpi-value cyan" id="kpi-profit">—</p>
+          </div>
+          <div class="kpi kpi-fees">
+            <div class="kpi-icon orange">
+              <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <p class="kpi-label">Total fees</p>
+            <p class="kpi-value orange" id="kpi-fees">—</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <p class="slabel">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Fee breakdown
+          </p>
+          <div class="fee-bar-wrap" id="fee-bar-wrap" style="display:none">
+            <div class="fee-bar-label">
+              <span>Cost split at recommended SP</span>
+            </div>
+            <div class="fee-bar" id="fee-bar"></div>
+            <div class="fee-legend" id="fee-legend"></div>
+          </div>
+          <hr class="div" id="fee-div" style="display:none"/>
+          <div id="bk-rows"></div>
+        </div>
+      </div>
+
+      <div id="s-empty" class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <p>Enter your cost and FBA fee<br/>to calculate the selling price.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ BULK ══ -->
+<div class="panel" id="panel-bulk">
+  <div class="card">
+    <p class="slabel">
+      <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Bulk settings
+    </p>
+    <div class="cols" style="margin-bottom:14px">
+      <div class="field">
+        <label>Category — applied to all rows</label>
+        <select id="b-cat" onchange="bCatHint()">
+          <optgroup label="⭐ Most used">
+            <option value="beauty">Beauty, Health &amp; Personal Care</option>
+            <option value="home">Home Products</option>
+            <option value="baby">Baby Products</option>
+            <option value="grocery">Grocery &amp; Gourmet Foods</option>
+          </optgroup>
+          <optgroup label="All categories">
+            <option value="clothing">Clothing &amp; Accessories</option>
+            <option value="electronics_acc">Electronic Accessories</option>
+            <option value="pet_clothing">Pet Clothing</option>
+            <option value="jewellery">Jewellery</option>
+            <option value="watches">Watches</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="field">
+        <label>Target margin %</label>
+        <input type="number" id="b-tgt" value="5.15" min="0" max="80" step="0.05"/>
+      </div>
+    </div>
+    <div class="hint-box" id="b-hint">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="b-hint-text"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="slabel">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>
+      Input data
+    </p>
+    <div class="mode-btns">
+      <div class="mode-btn active" id="mb-paste" onclick="setMode('paste')">
+        <svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+        Paste from Excel
+      </div>
+      <div class="mode-btn" id="mb-upload" onclick="setMode('upload')">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload CSV
+      </div>
+      <div class="mode-btn" id="mb-manual" onclick="setMode('manual')">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Manual entry
+      </div>
+    </div>
+
+    <div id="in-paste">
+      <p class="note" style="margin-bottom:10px">Paste two columns from Excel or Sheets: <b>Cost</b> · <b>FBA Fee</b>. Optional 3rd column: <b>Label/ASIN</b>. Tab or comma separated.</p>
+      <textarea class="bulk-ta" id="paste-ta" placeholder="7.29&#9;2.76&#10;5.50&#9;2.43&#10;12.00&#9;3.10&#10;&#10;With labels:&#10;B0918FHY6P&#9;7.29&#9;2.76"></textarea>
+      <div class="bulk-actions">
+        <button class="btn btn-primary" onclick="runBulk()">
+          <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Calculate all
+        </button>
+        <button class="btn btn-ghost" onclick="clearBulk()">Clear</button>
+        <span class="row-count" id="paste-rc"></span>
+      </div>
+    </div>
+
+    <div id="in-upload" style="display:none">
+      <div class="drop-zone" id="dz" onclick="document.getElementById('fi').click()" ondragover="dzOver(event)" ondragleave="dzLeave()" ondrop="dzDrop(event)">
+        <div class="dz-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <p class="dz-title">Click to upload or drag &amp; drop</p>
+        <p class="dz-sub">CSV · columns: Cost, FBA Fee · label column optional</p>
+        <input type="file" id="fi" accept=".csv,.txt" onchange="handleFile(event)"/>
+      </div>
+      <div class="bulk-actions">
+        <button class="btn btn-primary" onclick="runBulk()">
+          <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Calculate all
+        </button>
+        <button class="btn btn-ghost" onclick="clearBulk()">Clear</button>
+        <span class="row-count" id="upload-rc"></span>
+      </div>
+    </div>
+
+    <div id="in-manual" style="display:none">
+      <p class="note" style="margin-bottom:12px">Add one row per product. Storage is optional.</p>
+      <div id="mrows"></div>
+      <button class="btn btn-ghost" onclick="addMRow()" style="margin-top:8px">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add row
+      </button>
+      <div class="bulk-actions" style="margin-top:12px">
+        <button class="btn btn-primary" onclick="runBulk()">
+          <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Calculate all
+        </button>
+        <button class="btn btn-ghost" onclick="clearBulk()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="bulk-results">
+    <div class="card">
+      <div class="result-bar">
+        <p class="slabel" style="margin:0">
+          <svg viewBox="0 0 24 24"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>
+          Results
+        </p>
+        <button class="btn btn-green" onclick="dlCSV()">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download CSV
+        </button>
+      </div>
+      <div class="summary-strip" id="b-summary"></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Label / SKU</th><th>Cost</th><th>FBA Fee</th>
+              <th>Recommended SP</th><th>Margin %</th><th>Net Profit</th><th>Ref. Rate</th>
+            </tr>
+          </thead>
+          <tbody id="b-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
 
 </main>
 
-<footer class="footer">
-  Amazon UK FBA · VAT-inclusive pricing · Tiered referral fees by category
+<footer class="footer glass">
+  <b>SPcalc</b> · Amazon UK FBA · VAT-inclusive pricing · Tiered referral fees by category
 </footer>
 
 <script>
-/* ========== SHARED DATA ========== */
-const CATEGORIES = {
-  beauty:      { label:"Beauty, Health & Personal Care", hint:"8% if SP ≤ £10 → 15% if SP > £10", minFee:0.25, tiers:[{upTo:10,rate:0.08},{upTo:Infinity,rate:0.15}] },
-  home:        { label:"Home Products",                  hint:"8% if SP ≤ £20 → 15% if SP > £20", minFee:0.25, tiers:[{upTo:20,rate:0.08},{upTo:Infinity,rate:0.15}] },
-  baby:        { label:"Baby Products",                  hint:"8% if SP ≤ £10 → 15% if SP > £10", minFee:0.25, tiers:[{upTo:10,rate:0.08},{upTo:Infinity,rate:0.15}] },
-  grocery:     { label:"Grocery & Gourmet Foods",        hint:"5% if SP ≤ £10 → 8% if SP > £10",  minFee:0,    tiers:[{upTo:10,rate:0.05},{upTo:Infinity,rate:0.08}] },
-  clothing:    { label:"Clothing & Accessories",         hint:"5% (≤£15) → 10% (£15–£20) → 15% (>£20)", minFee:0.25, tiers:[{upTo:15,rate:0.05},{upTo:20,rate:0.10},{upTo:Infinity,rate:0.15}] },
-  pet_clothing:{ label:"Pet Clothing",                   hint:"5% if SP ≤ £10 → 15% if SP > £10", minFee:0.25, tiers:[{upTo:10,rate:0.05},{upTo:Infinity,rate:0.15}] },
-  jewellery:   { label:"Jewellery",                      hint:"20% if SP ≤ £250 → 5% if SP > £250", minFee:0.25, tiers:[{upTo:250,rate:0.20},{upTo:Infinity,rate:0.05}] },
-  watches:     { label:"Watches",                        hint:"15% (≤£50) → 8% (£50–£100) → 4% (£100–£500) → 2% (>£500)", minFee:0.25, tiers:[{upTo:50,rate:0.15},{upTo:100,rate:0.08},{upTo:500,rate:0.04},{upTo:Infinity,rate:0.02}] },
+const CATS={
+  beauty:      {label:"Beauty, Health & Personal Care",hint:"<b>8%</b> if SP ≤ £10 → <b>15%</b> if SP > £10",minFee:0.25,tiers:[{upTo:10,rate:0.08},{upTo:Infinity,rate:0.15}]},
+  home:        {label:"Home Products",hint:"<b>8%</b> if SP ≤ £20 → <b>15%</b> if SP > £20",minFee:0.25,tiers:[{upTo:20,rate:0.08},{upTo:Infinity,rate:0.15}]},
+  baby:        {label:"Baby Products",hint:"<b>8%</b> if SP ≤ £10 → <b>15%</b> if SP > £10",minFee:0.25,tiers:[{upTo:10,rate:0.08},{upTo:Infinity,rate:0.15}]},
+  grocery:     {label:"Grocery & Gourmet Foods",hint:"<b>5%</b> if SP ≤ £10 → <b>8%</b> if SP > £10",minFee:0,tiers:[{upTo:10,rate:0.05},{upTo:Infinity,rate:0.08}]},
+  clothing:    {label:"Clothing & Accessories",hint:"<b>5%</b> (≤£15) → <b>10%</b> (£15–£20) → <b>15%</b> (>£20)",minFee:0.25,tiers:[{upTo:15,rate:0.05},{upTo:20,rate:0.10},{upTo:Infinity,rate:0.15}]},
+  electronics_acc:{label:"Electronic Accessories",hint:"<b>15%</b> flat on all prices",minFee:0.25,tiers:[{upTo:Infinity,rate:0.15}]},
+  pet_clothing:{label:"Pet Clothing",hint:"<b>5%</b> if SP ≤ £10 → <b>15%</b> if SP > £10",minFee:0.25,tiers:[{upTo:10,rate:0.05},{upTo:Infinity,rate:0.15}]},
+  jewellery:   {label:"Jewellery",hint:"<b>20%</b> if SP ≤ £250 → <b>5%</b> if SP > £250",minFee:0.25,tiers:[{upTo:250,rate:0.20},{upTo:Infinity,rate:0.05}]},
+  watches:     {label:"Watches",hint:"<b>15%</b> (≤£50) → <b>8%</b> (£50–£100) → <b>4%</b> (£100–£500) → <b>2%</b> (>£500)",minFee:0.25,tiers:[{upTo:50,rate:0.15},{upTo:100,rate:0.08},{upTo:500,rate:0.04},{upTo:Infinity,rate:0.02}]},
 };
+const ENDINGS=[0.05,0.09,0.15,0.19,0.25,0.29,0.35,0.39,0.45,0.49,0.55,0.59,0.65,0.69,0.75,0.79,0.85,0.89,0.95,0.99];
 
-const PRICE_ENDINGS = [0.05,0.09,0.15,0.19,0.25,0.29,0.35,0.39,0.45,0.49,0.55,0.59,0.65,0.69,0.75,0.79,0.85,0.89,0.95,0.99];
-
-function amazonFee(sp, catKey) {
-  const cat = CATEGORIES[catKey];
-  const tier = cat.tiers.find(t => sp <= t.upTo);
-  return Math.max(Math.round(sp * tier.rate * 100) / 100, cat.minFee);
+function aFee(sp,k){const t=CATS[k].tiers.find(t=>sp<=t.upTo);return Math.max(Math.round(sp*t.rate*100)/100,CATS[k].minFee)}
+function rLbl(sp,k){return(CATS[k].tiers.find(t=>sp<=t.upTo).rate*100).toFixed(0)+'%'}
+function dFee(ref,fba){return(Math.round(ref*0.02*100)/100)+(Math.round(fba*0.02*100)/100)}
+function mCalc(sp,cost,fba,stor,k){
+  const vat=sp*20/120,ref=aFee(sp,k),dst=dFee(ref,fba);
+  const pft=Math.round((sp-(cost+vat+ref+dst+fba+stor))*100)/100;
+  return{margin:pft/sp,profit:pft,vat,ref,dst};
 }
-function referralRateLabel(sp, catKey) {
-  const tier = CATEGORIES[catKey].tiers.find(t => sp <= t.upTo);
-  return (tier.rate * 100).toFixed(0) + '%';
+function nextP(p){
+  const i=Math.floor(Math.round(p*100)/100),d=Math.round((p-i)*100)/100;
+  for(const e of ENDINGS)if(d<=e)return Math.round((i+e)*100)/100;
+  return Math.round((i+1+ENDINGS[0])*100)/100;
 }
-function digitalFee(referral, fulfilment) {
-  return (Math.round(referral * 0.02 * 100) / 100) + (Math.round(fulfilment * 0.02 * 100) / 100);
-}
-function calculateMargin(sp, cost, fulfilment, storage, catKey) {
-  const vat      = sp * 20 / 120;
-  const referral = amazonFee(sp, catKey);
-  const digital  = digitalFee(referral, fulfilment);
-  const profit   = Math.round((sp - (cost + vat + referral + digital + fulfilment + storage)) * 100) / 100;
-  return { margin: profit / sp, profit, vat, referral, digital };
-}
-function nextAllowedPrice(price) {
-  const integer = Math.floor(Math.round(price * 100) / 100);
-  const decimal = Math.round((price - integer) * 100) / 100;
-  for (const e of PRICE_ENDINGS) { if (decimal <= e) return Math.round((integer + e) * 100) / 100; }
-  return Math.round((integer + 1 + PRICE_ENDINGS[0]) * 100) / 100;
-}
-function findSP(cost, fulfilment, targetMargin, storage, catKey) {
-  let sp = 2.00;
-  while (sp <= 500) {
-    const candidate = nextAllowedPrice(sp);
-    const result = calculateMargin(candidate, cost, fulfilment, storage, catKey);
-    if (result.margin >= targetMargin) return { sp: candidate, ...result };
-    sp = Math.round((candidate + 0.01) * 100) / 100;
-  }
+function findSP(cost,fba,tgt,stor,k){
+  let sp=2.0;
+  while(sp<=500){const c=nextP(sp),r=mCalc(c,cost,fba,stor,k);if(r.margin>=tgt)return{sp:c,...r};sp=Math.round((c+0.01)*100)/100;}
   return null;
 }
+function f(n){return'£'+Math.abs(n).toFixed(2)}
+function neg(n){return'−£'+Math.abs(n).toFixed(2)}
 
-function f(n)   { return '£' + Math.abs(n).toFixed(2); }
-function neg(n) { return '−£' + Math.abs(n).toFixed(2); }
-
-/* ========== TAB SWITCHING ========== */
-function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (tab==='single'?0:1)===i));
-  document.getElementById('panel-single').classList.toggle('active', tab==='single');
-  document.getElementById('panel-bulk').classList.toggle('active', tab==='bulk');
+/* TABS */
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',(t==='single'?0:1)===i));
+  document.getElementById('panel-single').classList.toggle('active',t==='single');
+  document.getElementById('panel-bulk').classList.toggle('active',t==='bulk');
 }
 
-/* ========== SINGLE CALC ========== */
-function onCategoryChange() {
-  const catKey = document.getElementById('category').value;
-  document.getElementById('fee-hint').innerHTML = '<span>Referral fee:</span> ' + CATEGORIES[catKey].hint + ' &nbsp;(min £' + CATEGORIES[catKey].minFee.toFixed(2) + ')';
-  calc();
+/* SINGLE */
+function sCatChange(){
+  const k=document.getElementById('s-cat').value;
+  document.getElementById('s-hint-text').innerHTML='Referral fee: '+CATS[k].hint+' &nbsp;(min £'+CATS[k].minFee.toFixed(2)+')';
+  sCalc();
 }
+function sCalc(){
+  const cost=parseFloat(document.getElementById('s-cost').value);
+  const fba=parseFloat(document.getElementById('s-fba').value);
+  const tgt=(parseFloat(document.getElementById('s-tgt').value)||5.15)/100;
+  const stor=parseFloat(document.getElementById('s-stor').value)||0;
+  const k=document.getElementById('s-cat').value;
+  const re=document.getElementById('s-results'),em=document.getElementById('s-empty');
+  if(isNaN(cost)||cost<=0||isNaN(fba)||fba<=0){re.style.display='none';em.style.display='block';return}
+  const res=findSP(cost,fba,tgt,stor,k);
+  if(!res){em.innerHTML='<div class="empty-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><p>No valid SP found under £500.</p>';re.style.display='none';em.style.display='block';return}
+  const{sp,margin,profit,vat,ref,dst}=res;
+  const mpct=(margin*100).toFixed(2);
+  const totalFees=ref+dst+fba+stor;
+  re.style.display='block';em.style.display='none';
+  document.getElementById('rh-sp').textContent=f(sp);
+  document.getElementById('rh-exvat').textContent=f(sp*100/120);
+  document.getElementById('rh-vat').textContent=f(vat);
+  const mEl=document.getElementById('kpi-margin');
+  mEl.textContent=mpct+'%';mEl.className='kpi-value '+(margin>=tgt?'green':'amber');
+  document.getElementById('kpi-profit').textContent=f(profit);
+  document.getElementById('kpi-fees').textContent=f(totalFees);
 
-function calc() {
-  const cost       = parseFloat(document.getElementById('cost').value);
-  const fulfilment = parseFloat(document.getElementById('fulfilment').value);
-  const targetPct  = parseFloat(document.getElementById('target').value) || 5.15;
-  const storage    = parseFloat(document.getElementById('storage').value) || 0;
-  const catKey     = document.getElementById('category').value;
-  const targetMargin = targetPct / 100;
+  // Fee bar
+  const pct=v=>((v/sp)*100).toFixed(1);
+  document.getElementById('fee-bar-wrap').style.display='block';
+  document.getElementById('fee-div').style.display='block';
+  document.getElementById('fee-bar').innerHTML=`
+    <div class="fee-bar-seg seg-green" style="width:${pct(profit)}%"></div>
+    <div class="fee-bar-seg seg-indigo" style="width:${pct(ref+dst)}%"></div>
+    <div class="fee-bar-seg seg-amber" style="width:${pct(fba+stor)}%"></div>
+    <div class="fee-bar-seg seg-red" style="width:${pct(cost)}%"></div>`;
+  document.getElementById('fee-legend').innerHTML=`
+    <span class="fee-leg-item"><span class="fee-leg-dot" style="background:var(--green)"></span>Profit ${pct(profit)}%</span>
+    <span class="fee-leg-item"><span class="fee-leg-dot" style="background:var(--accent)"></span>Ref+DST ${pct(ref+dst)}%</span>
+    <span class="fee-leg-item"><span class="fee-leg-dot" style="background:var(--amber)"></span>FBA ${pct(fba+stor)}%</span>
+    <span class="fee-leg-item"><span class="fee-leg-dot" style="background:var(--red)"></span>Cost ${pct(cost)}%</span>`;
 
-  const resEl   = document.getElementById('results');
-  const emptyEl = document.getElementById('empty');
-
-  if (isNaN(cost) || cost <= 0 || isNaN(fulfilment) || fulfilment <= 0) {
-    resEl.style.display = 'none'; emptyEl.style.display = 'block'; return;
-  }
-
-  const result = findSP(cost, fulfilment, targetMargin, storage, catKey);
-  if (!result) {
-    emptyEl.innerHTML = '<div class="empty-icon">⚠️</div><p>No valid SP found under £500.</p>';
-    resEl.style.display = 'none'; emptyEl.style.display = 'block'; return;
-  }
-
-  const { sp, margin, profit, vat, referral, digital } = result;
-  const actualPct = (margin * 100).toFixed(2);
-
-  resEl.style.display = 'block'; emptyEl.style.display = 'none';
-  document.getElementById('r-sp').textContent = f(sp);
-  const mEl = document.getElementById('r-margin');
-  mEl.textContent = actualPct + '%';
-  mEl.className = 'metric-value ' + (margin >= targetMargin ? 'green' : 'amber');
-  document.getElementById('r-profit').textContent = f(profit);
-
-  const rateLabel = referralRateLabel(sp, catKey);
-  const rows = [
-    { label:'Selling price (VAT-inclusive)', val:f(sp), cls:'sp-row' },
-    { label:'VAT (20/120 of SP)', val:neg(vat) },
-    { label:'Referral fee (' + rateLabel + ')', val:neg(referral) },
-    { label:'Digital services fee (2% + 2%)', val:neg(digital) },
-    { label:'FBA fulfilment fee', val:neg(fulfilment) },
-    ...(storage > 0 ? [{ label:'Storage cost', val:neg(storage) }] : []),
-    { label:'Cost of goods', val:neg(cost) },
-    { label:'Net profit &nbsp;·&nbsp; ' + actualPct + '% margin', val:f(profit), cls:'total-row' },
+  const ico=(path)=>`<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
+  const rows=[
+    {l:'Selling price (VAT-inclusive)',v:f(sp),i:ico('<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>'),c:'bk-sp'},
+    {l:'VAT (20/120 of SP)',v:neg(vat),i:ico('<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>')},
+    {l:'Referral fee ('+rLbl(sp,k)+')',v:neg(ref),i:ico('<rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>')},
+    {l:'Digital services fee (2%+2%)',v:neg(dst),i:ico('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>')},
+    {l:'FBA fulfilment fee',v:neg(fba),i:ico('<path d="M5 12H3l9-9 9 9h-2M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>')},
+    ...(stor>0?[{l:'Storage cost',v:neg(stor),i:ico('<rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>')}]:[]),
+    {l:'Cost of goods',v:neg(cost),i:ico('<path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>')},
+    {l:'Net profit · '+mpct+'% margin',v:f(profit),i:ico('<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>'),c:'bk-tot'},
   ];
-  document.getElementById('breakdown-rows').innerHTML = rows
-    .map(r => `<div class="breakdown-row ${r.cls||''}"><span>${r.label}</span><span class="val">${r.val}</span></div>`)
-    .join('');
+  document.getElementById('bk-rows').innerHTML=rows.map(r=>`
+    <div class="bk-row ${r.c||''}">
+      <span class="bk-row-left">${r.i}<span>${r.l}</span></span>
+      <span class="bk-val">${r.v}</span>
+    </div>`).join('');
 }
 
-/* ========== BULK MODE ========== */
-let inputMode = 'paste';
-let parsedRows = []; // { label, cost, fba, storage }
-let bulkResults = [];
-
-function setInputMode(mode) {
-  inputMode = mode;
-  ['paste','upload','manual'].forEach(m => {
-    document.getElementById('mode-' + m).classList.toggle('active', m === mode);
-    document.getElementById('input-' + m).style.display = m === mode ? 'block' : 'none';
+/* BULK */
+let bMode='paste',bResults=[],mRowId=0;
+function bCatHint(){
+  const k=document.getElementById('b-cat').value;
+  document.getElementById('b-hint-text').innerHTML='Referral fee: '+CATS[k].hint+' &nbsp;(min £'+CATS[k].minFee.toFixed(2)+')';
+}
+function setMode(m){
+  bMode=m;
+  ['paste','upload','manual'].forEach(x=>{
+    document.getElementById('mb-'+x).classList.toggle('active',x===m);
+    document.getElementById('in-'+x).style.display=x===m?'block':'none';
   });
-  if (mode === 'manual' && document.querySelectorAll('.manual-row').length === 0) {
-    addManualRow(); addManualRow(); addManualRow();
-  }
+  if(m==='manual'&&!document.querySelector('.mrow')){addMRow();addMRow();addMRow();}
 }
-
-function bulkCategoryHint() {
-  const catKey = document.getElementById('bulk-category').value;
-  document.getElementById('bulk-fee-hint').innerHTML = '<span>Referral fee:</span> ' + CATEGORIES[catKey].hint + ' &nbsp;(min £' + CATEGORIES[catKey].minFee.toFixed(2) + ')';
+function parsePaste(txt){
+  return txt.trim().split('\n').filter(l=>l.trim()).reduce((acc,line)=>{
+    const parts=line.trim().split(/[\t,;]+/);
+    if(parts.length<2)return acc;
+    let lbl='',cStr,fStr,sStr='0';
+    if(isNaN(parseFloat(parts[0]))||/[a-zA-Z]/.test(parts[0])){lbl=parts[0].trim();cStr=parts[1];fStr=parts[2]||'';sStr=parts[3]||'0';}
+    else{cStr=parts[0];fStr=parts[1];sStr=parts[2]||'0';}
+    const cost=parseFloat(cStr),fba=parseFloat(fStr),stor=parseFloat(sStr)||0;
+    if(isNaN(cost)||isNaN(fba))return acc;
+    if(/cost|fee/i.test(cStr)||/cost|fee/i.test(fStr))return acc;
+    acc.push({lbl,cost,fba,stor});return acc;
+  },[]);
 }
-
-// Parse pasted text
-function parsePasteText(text) {
-  const lines = text.trim().split('\n').filter(l => l.trim());
-  const rows = [];
-  for (const line of lines) {
-    const parts = line.trim().split(/[\t,;]+/);
-    if (parts.length < 2) continue;
-    // detect if first col is label (non-numeric)
-    let label = '', costStr, fbaStr, storageStr = '0';
-    const first = parts[0].trim();
-    if (isNaN(parseFloat(first)) || /[a-zA-Z]/.test(first)) {
-      label = first; costStr = parts[1]; fbaStr = parts[2] || '';
-      storageStr = parts[3] || '0';
-    } else {
-      costStr = parts[0]; fbaStr = parts[1];
-      storageStr = parts[2] || '0';
-    }
-    const cost = parseFloat(costStr);
-    const fba  = parseFloat(fbaStr);
-    const storage = parseFloat(storageStr) || 0;
-    if (isNaN(cost) || isNaN(fba)) continue;
-    // skip header row
-    if (costStr.toLowerCase().includes('cost') || fbaStr.toLowerCase().includes('fee')) continue;
-    rows.push({ label, cost, fba, storage });
-  }
-  return rows;
+function addMRow(){
+  mRowId++;
+  const d=document.createElement('div');
+  d.className='mrow';d.id='mr'+mRowId;
+  d.innerHTML=`
+    <div class="field"><label>Label / ASIN</label><input type="text" placeholder="B0918FHY6P"/></div>
+    <div class="field"><label>Cost ex-VAT</label><div class="pw"><input type="number" step="0.01" min="0" placeholder="7.29"/></div></div>
+    <div class="field"><label>FBA fee</label><div class="pw"><input type="number" step="0.01" min="0" placeholder="2.76"/></div></div>
+    <div class="field"><label>Storage</label><div class="pw"><input type="number" step="0.01" min="0" value="0.00"/></div></div>
+    <button class="mrow-del" onclick="document.getElementById('mr${mRowId}').remove()">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>`;
+  document.getElementById('mrows').appendChild(d);
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  onCategoryChange();
-  bulkCategoryHint();
-  document.getElementById('paste-area').addEventListener('input', () => {
-    const rows = parsePasteText(document.getElementById('paste-area').value);
-    document.getElementById('paste-count').textContent = rows.length > 0 ? rows.length + ' rows detected' : '';
+function getManual(){
+  return[...document.querySelectorAll('.mrow')].reduce((acc,r)=>{
+    const ins=r.querySelectorAll('input');
+    const cost=parseFloat(ins[1].value),fba=parseFloat(ins[2].value);
+    if(!isNaN(cost)&&cost>0&&!isNaN(fba)&&fba>0)acc.push({lbl:ins[0].value.trim(),cost,fba,stor:parseFloat(ins[3].value)||0});
+    return acc;
+  },[]);
+}
+function handleFile(e){
+  const file=e.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=ev=>{document.getElementById('paste-ta').value=ev.target.result;const rows=parsePaste(ev.target.result);document.getElementById('upload-rc').textContent=rows.length+' rows from '+file.name;setMode('paste');};
+  r.readAsText(file);
+}
+function dzOver(e){e.preventDefault();document.getElementById('dz').classList.add('over')}
+function dzLeave(){document.getElementById('dz').classList.remove('over')}
+function dzDrop(e){e.preventDefault();dzLeave();const file=e.dataTransfer.files[0];if(!file)return;const r=new FileReader();r.onload=ev=>{document.getElementById('paste-ta').value=ev.target.result;setMode('paste');};r.readAsText(file);}
+function runBulk(){
+  const k=document.getElementById('b-cat').value;
+  const tgt=(parseFloat(document.getElementById('b-tgt').value)||5.15)/100;
+  const rows=bMode==='manual'?getManual():parsePaste(document.getElementById('paste-ta').value);
+  if(!rows.length){alert('No valid rows found. Each row needs Cost and FBA Fee.');return}
+  bResults=rows.map((row,i)=>{
+    const res=findSP(row.cost,row.fba,tgt,row.stor,k);
+    if(!res)return{...row,idx:i+1,err:'No SP found under £500'};
+    return{...row,idx:i+1,sp:res.sp,margin:(res.margin*100).toFixed(2),profit:res.profit,rl:rLbl(res.sp,k)};
   });
-});
-
-// Manual rows
-let manualRowId = 0;
-function addManualRow() {
-  manualRowId++;
-  const div = document.createElement('div');
-  div.className = 'manual-row';
-  div.id = 'mrow-' + manualRowId;
-  div.style.cssText = 'display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:end;';
-  div.innerHTML = `
-    <div class="field"><label>Label / ASIN / SKU (optional)</label><input type="text" placeholder="e.g. B0918FHY6P" /></div>
-    <div class="field"><label>Cost ex-VAT (£)</label><input type="number" step="0.01" min="0" placeholder="7.29" /></div>
-    <div class="field"><label>FBA fee (£)</label><input type="number" step="0.01" min="0" placeholder="2.76" /></div>
-    <div class="field"><label>Storage (£)</label><input type="number" step="0.01" min="0" value="0.00" /></div>
-    <button onclick="removeManualRow('mrow-${manualRowId}')" style="background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:var(--radius-sm);padding:8px 10px;cursor:pointer;font-size:14px;margin-bottom:0;">✕</button>
-  `;
-  document.getElementById('manual-rows').appendChild(div);
+  renderBulk(tgt*100,k);
 }
-function removeManualRow(id) { const el = document.getElementById(id); if (el) el.remove(); }
-
-function getManualRows() {
-  const rows = [];
-  document.querySelectorAll('.manual-row').forEach(row => {
-    const inputs = row.querySelectorAll('input');
-    const label   = inputs[0].value.trim();
-    const cost    = parseFloat(inputs[1].value);
-    const fba     = parseFloat(inputs[2].value);
-    const storage = parseFloat(inputs[3].value) || 0;
-    if (!isNaN(cost) && cost > 0 && !isNaN(fba) && fba > 0) {
-      rows.push({ label, cost, fba, storage });
-    }
-  });
-  return rows;
-}
-
-// File upload
-function handleFile(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById('paste-area').value = e.target.result;
-    const rows = parsePasteText(e.target.result);
-    document.getElementById('upload-count').textContent = rows.length + ' rows loaded from ' + file.name;
-    setInputMode('paste');
-  };
-  reader.readAsText(file);
-}
-function dragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag-over'); }
-function dragLeave()  { document.getElementById('drop-zone').classList.remove('drag-over'); }
-function dropFile(e) {
-  e.preventDefault(); dragLeave();
-  const file = e.dataTransfer.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const rows = parsePasteText(ev.target.result);
-    document.getElementById('upload-count').textContent = rows.length + ' rows loaded from ' + file.name;
-    document.getElementById('paste-area').value = ev.target.result;
-    setInputMode('paste');
-  };
-  reader.readAsText(file);
-}
-
-/* ---- Run bulk calculation ---- */
-function runBulk() {
-  const catKey      = document.getElementById('bulk-category').value;
-  const targetPct   = parseFloat(document.getElementById('bulk-target').value) || 5.15;
-  const targetMargin = targetPct / 100;
-
-  let rows = [];
-  if (inputMode === 'paste' || inputMode === 'upload') {
-    rows = parsePasteText(document.getElementById('paste-area').value);
-  } else {
-    rows = getManualRows();
-  }
-
-  if (rows.length === 0) {
-    alert('No valid rows found. Make sure each row has at least two numbers: cost and FBA fee.');
-    return;
-  }
-
-  bulkResults = rows.map((row, i) => {
-    const result = findSP(row.cost, row.fba, targetMargin, row.storage, catKey);
-    if (!result) return { ...row, index: i+1, error: 'No SP found under £500' };
-    return {
-      ...row,
-      index: i + 1,
-      sp: result.sp,
-      margin: (result.margin * 100).toFixed(2),
-      profit: result.profit,
-      rateLabel: referralRateLabel(result.sp, catKey),
-    };
-  });
-
-  renderBulkResults(targetPct, catKey);
-}
-
-function renderBulkResults(targetPct, catKey) {
-  const el = document.getElementById('bulk-results');
-  el.style.display = 'block';
-  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-  const valid = bulkResults.filter(r => !r.error);
-  const avgSP     = valid.length ? (valid.reduce((s,r) => s + r.sp, 0) / valid.length) : 0;
-  const avgMargin = valid.length ? (valid.reduce((s,r) => s + parseFloat(r.margin), 0) / valid.length) : 0;
-  const avgProfit = valid.length ? (valid.reduce((s,r) => s + r.profit, 0) / valid.length) : 0;
-
-  document.getElementById('bulk-summary').innerHTML = `
-    <div class="bulk-stat"><strong>${bulkResults.length}</strong>Total rows</div>
-    <div class="bulk-stat"><strong>${valid.length}</strong>Calculated</div>
-    <div class="bulk-stat"><strong>£${avgSP.toFixed(2)}</strong>Avg SP</div>
-    <div class="bulk-stat"><strong>${avgMargin.toFixed(2)}%</strong>Avg margin</div>
-    <div class="bulk-stat"><strong>£${avgProfit.toFixed(2)}</strong>Avg profit</div>
-  `;
-
-  const tbody = document.getElementById('bulk-tbody');
-  tbody.innerHTML = bulkResults.map(r => {
-    if (r.error) return `
-      <tr>
-        <td class="mono">${r.index}</td>
-        <td class="label">${r.label || '—'}</td>
-        <td class="mono">${f(r.cost)}</td>
-        <td class="mono">${f(r.fba)}</td>
-        <td class="err" colspan="4">${r.error}</td>
-      </tr>`;
-    const mCls = parseFloat(r.margin) >= targetPct - 0.05 ? 'green' : 'amber';
-    return `
-      <tr>
-        <td class="mono">${r.index}</td>
-        <td class="label">${r.label || '—'}</td>
-        <td class="mono">${f(r.cost)}</td>
-        <td class="mono">${f(r.fba)}</td>
-        <td class="green">£${r.sp.toFixed(2)}</td>
-        <td class="${mCls}">${r.margin}%</td>
-        <td class="mono">£${r.profit.toFixed(2)}</td>
-        <td class="mono">${r.rateLabel}</td>
-      </tr>`;
+function renderBulk(tgtPct,k){
+  const el=document.getElementById('bulk-results');
+  el.style.display='block';
+  setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),50);
+  const valid=bResults.filter(r=>!r.err);
+  const avg=arr=>arr.length?arr.reduce((s,v)=>s+v,0)/arr.length:0;
+  document.getElementById('b-summary').innerHTML=`
+    <div class="sstat"><div class="sstat-val">${bResults.length}</div><div class="sstat-label">Total rows</div></div>
+    <div class="sstat"><div class="sstat-val green">${valid.length}</div><div class="sstat-label">Calculated</div></div>
+    <div class="sstat"><div class="sstat-val">£${avg(valid.map(r=>r.sp)).toFixed(2)}</div><div class="sstat-label">Avg SP</div></div>
+    <div class="sstat"><div class="sstat-val">${avg(valid.map(r=>parseFloat(r.margin))).toFixed(2)}%</div><div class="sstat-label">Avg margin</div></div>
+    <div class="sstat"><div class="sstat-val">£${avg(valid.map(r=>r.profit)).toFixed(2)}</div><div class="sstat-label">Avg profit</div></div>`;
+  document.getElementById('b-tbody').innerHTML=bResults.map(r=>{
+    if(r.err)return`<tr><td class="num">${r.idx}</td><td class="lbl">${r.lbl||'—'}</td><td class="mono">${f(r.cost)}</td><td class="mono">${f(r.fba)}</td><td class="err" colspan="4">${r.err}</td></tr>`;
+    const mc=parseFloat(r.margin)>=tgtPct-0.05?'green':'amber';
+    return`<tr><td class="num">${r.idx}</td><td class="lbl">${r.lbl||'—'}</td><td class="mono">${f(r.cost)}</td><td class="mono">${f(r.fba)}</td><td class="green">£${r.sp.toFixed(2)}</td><td class="${mc}">${r.margin}%</td><td class="mono">£${r.profit.toFixed(2)}</td><td class="mono">${r.rl}</td></tr>`;
   }).join('');
 }
-
-function clearBulk() {
-  document.getElementById('paste-area').value = '';
-  document.getElementById('paste-count').textContent = '';
-  document.getElementById('bulk-results').style.display = 'none';
-  document.querySelectorAll('.manual-row').forEach(r => r.remove());
-  manualRowId = 0;
-  if (inputMode === 'manual') { addManualRow(); addManualRow(); addManualRow(); }
+function clearBulk(){
+  document.getElementById('paste-ta').value='';
+  document.getElementById('paste-rc').textContent='';
+  document.getElementById('bulk-results').style.display='none';
+  document.querySelectorAll('.mrow').forEach(r=>r.remove());
+  mRowId=0;
+  if(bMode==='manual'){addMRow();addMRow();addMRow();}
 }
-
-/* ---- CSV download ---- */
-function downloadCSV() {
-  if (!bulkResults.length) return;
-  const catKey    = document.getElementById('bulk-category').value;
-  const targetPct = document.getElementById('bulk-target').value;
-  const catLabel  = CATEGORIES[catKey].label;
-
-  const header = ['#','Label/SKU','Cost (£)','FBA Fee (£)','Storage (£)','Recommended SP (£)','Margin %','Net Profit (£)','Referral Rate'];
-  const rows = bulkResults.map(r => [
-    r.index,
-    r.label || '',
-    r.cost.toFixed(2),
-    r.fba.toFixed(2),
-    (r.storage || 0).toFixed(2),
-    r.error ? 'ERROR' : r.sp.toFixed(2),
-    r.error ? r.error : r.margin,
-    r.error ? '' : r.profit.toFixed(2),
-    r.error ? '' : r.rateLabel,
-  ]);
-
-  const meta = [
-    ['Category', catLabel],
-    ['Target margin', targetPct + '%'],
-    ['Generated', new Date().toLocaleString()],
-    [],
-  ];
-
-  const csv = [...meta, header, ...rows]
-    .map(row => row.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(','))
-    .join('\n');
-
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = 'amazon-sp-results-' + new Date().toISOString().slice(0,10) + '.csv';
-  a.click();
-  URL.revokeObjectURL(url);
+function dlCSV(){
+  if(!bResults.length)return;
+  const k=document.getElementById('b-cat').value,tgt=document.getElementById('b-tgt').value;
+  const hdr=['#','Label/SKU','Cost (£)','FBA Fee (£)','Storage (£)','Recommended SP (£)','Margin %','Net Profit (£)','Ref. Rate'];
+  const meta=[['Category',CATS[k].label],['Target margin',tgt+'%'],['Generated',new Date().toLocaleString()],[]];
+  const rows=bResults.map(r=>[r.idx,r.lbl||'',r.cost.toFixed(2),r.fba.toFixed(2),(r.stor||0).toFixed(2),r.err?'ERROR':r.sp.toFixed(2),r.err?r.err:r.margin,r.err?'':r.profit.toFixed(2),r.err?'':r.rl]);
+  const csv=[...meta,hdr,...rows].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='sp-results-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
 }
-
-// Init
-window.addEventListener('DOMContentLoaded', () => {
-  onCategoryChange();
-  bulkCategoryHint();
-  document.getElementById('paste-area').addEventListener('input', () => {
-    const rows = parsePasteText(document.getElementById('paste-area').value);
-    document.getElementById('paste-count').textContent = rows.length > 0 ? rows.length + ' rows detected' : '';
+window.addEventListener('DOMContentLoaded',()=>{
+  sCatChange();bCatHint();
+  document.getElementById('paste-ta').addEventListener('input',()=>{
+    const n=parsePaste(document.getElementById('paste-ta').value).length;
+    document.getElementById('paste-rc').innerHTML=n>0?'<b>'+n+'</b> rows detected':'';
   });
 });
 </script>
